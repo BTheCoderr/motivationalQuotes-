@@ -54,3 +54,9 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .shake{animation:shake .13s linear}@keyframes shake{0%,100%{transform:translate(0)}25%{transform:translate(-3px,1px)}50%{transform:translate(3px,-1px)}75%{transform:translate(-2px,-1px)}}
 @media(max-width:620px){.garageGrid{grid-template-columns:1fr 1fr}.stats .pill:nth-child(2){display:none}.pianoKey{min-height:68px}.hudCard{min-width:69px;padding:6px 8px}.topActions .pill{display:none}}
 @media(max-height:700px){.pianoKey{min-height:55px}.card{padding:15px}.how{margin:8px 0}.how div{padding:7px}.topbar{padding-bottom:4px}.bottom,.keys{padding-top:5px}.card h1{font-size:34px}.modeRow{margin:7px 0}}
+
+.pianoKey.hint{outline:3px solid var(--gold);box-shadow:0 0 0 3px #ffd16633,inset 0 -5px 0 #b7c0d8,0 0 26px #ffd16666;animation:keyHint .55s ease-in-out infinite alternate}
+@keyframes keyHint{from{filter:brightness(1)}to{filter:brightness(1.12)}}
+.countdownFlash{font-size:clamp(64px,18vw,130px)!important;color:#fff!important;text-shadow:0 0 22px #67e8ff,0 6px 40px #000!important}
+.practiceBadge{color:var(--green)!important;border-color:#7df0a344!important}
+.songSelect option:disabled{color:#6b7393}
