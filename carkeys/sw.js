@@ -1,4 +1,4 @@
-const CACHE='carkeys-v10-story-clarity-1';
+const CACHE='carkeys-v11-twin-memory-1';
 const CORE=['/','/index.html','/game-v2.css','/game-v2.js','/stories-data.js','/story-mode.js','/manifest.webmanifest','/icon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
