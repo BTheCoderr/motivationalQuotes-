@@ -53,6 +53,7 @@
         </div>
 
         <button class="btn big" id="startBtn">START RACE</button>
+        <button class="btn secondary big" id="freePlayBtn">PIANO PRACTICE</button>
         <div class="tiny">Phone: tap the piano · Computer: A S D F · Secret move: C-D-E-F</div>
       </div>
     </div>
@@ -83,6 +84,7 @@
   <div class="bottom">
     <select class="songSelect" id="songSelect" aria-label="Choose a track"></select>
     <div class="boostWrap"><div class="boost" id="boost"></div><div class="boostLabel">BOOST</div></div>
+    <button class="btn secondary" id="pauseBtn" aria-label="Pause">Ⅱ</button>
     <button class="btn secondary" id="restartBtn" aria-label="Restart">↻</button>
   </div>
 </div>
@@ -92,6 +94,15 @@
     <div class="modalHead"><div><h2>GARAGE</h2><div class="tiny" style="text-align:left">Race, earn stars, unlock rides.</div></div><button class="closeBtn" id="closeGarage">DONE</button></div>
     <div class="garageGrid" id="garageGrid"></div>
     <div class="paintRow" id="paintRow"></div>
+  </div>
+</div>
+
+<div class="modal" id="pauseModal">
+  <div class="modalCard" style="max-width:420px;text-align:center">
+    <h2 id="pauseTitle">PAUSED</h2>
+    <p class="tiny" id="pauseText" style="font-size:12px">The race clock is stopped.</p>
+    <button class="btn big" id="resumeBtn">RESUME</button>
+    <button class="btn secondary big" id="quitPracticeBtn" style="display:none">BACK TO START</button>
   </div>
 </div>
 
