@@ -143,3 +143,113 @@ button:active{transform:translateY(3px)}
   .heroWorld{min-height:360px}.heroCopy h1{font-size:36px}.modeCard{min-height:115px}.miniModes button{min-height:60px}
   .worldStage{min-height:330px}.keys button{height:86px}.carGrid{grid-template-columns:1fr}.carCard{min-height:240px}
 }
+
+/* v20: match the locked kid-game art direction more closely */
+.top:not(.compact){justify-content:flex-end;background:linear-gradient(180deg,#37c9ff,#62dcff);border-bottom-color:#ffffff99}
+.top:not(.compact) .brand{display:none}
+
+.homeScreen{padding-top:4px}
+.heroWorld{
+  min-height:500px;
+  height:min(60vh,610px);
+  background:
+    radial-gradient(circle at 78% 13%,#fff7b4 0 48px,transparent 49px),
+    radial-gradient(circle at 10% 12%,#ffffff 0 24px,transparent 25px),
+    linear-gradient(#42cfff 0 45%,#99ecff 46% 49%,#76dc62 50% 67%,#45bd3e 68%);
+}
+.heroWorld:before{content:none}
+.homeLogo{
+  position:absolute;z-index:12;left:50%;top:18px;transform:translateX(-50%);
+  display:flex;align-items:center;gap:0;font-family:"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;
+  font-weight:1000;font-size:clamp(44px,11vw,72px);letter-spacing:-5px;line-height:1;
+  filter:drop-shadow(0 5px 0 #134898) drop-shadow(0 8px 10px #114f8b44);
+  white-space:nowrap
+}
+.homeLogo span{-webkit-text-stroke:4px white;text-shadow:0 2px 0 #173e80}
+.homeLogo span:nth-child(1){color:#ffd02d}.homeLogo span:nth-child(2){color:#35a9ff}.homeLogo span:nth-child(3){color:#45d65d}
+.homeLogo span:nth-child(4){color:#ff4d8d}.homeLogo span:nth-child(5){color:#4bc7ff}.homeLogo span:nth-child(6){color:#ff9c2f}.homeLogo span:nth-child(7){color:#9e55ef}
+.homeLogo b{color:#35c7ff;-webkit-text-stroke:3px white;font-size:.8em;margin-left:3px;transform:rotate(8deg)}
+.homeSparkles{position:absolute;z-index:11;left:6%;right:6%;top:72px;display:flex;justify-content:space-between;pointer-events:none}
+.homeSparkles i{font-style:normal;font-size:28px;animation:homeFloat 2.8s ease-in-out infinite alternate;filter:drop-shadow(0 2px 0 white)}
+.homeSparkles i:nth-child(1){color:#ff4ea1}.homeSparkles i:nth-child(2){color:#ffd63f;animation-delay:.5s}.homeSparkles i:nth-child(3){color:#4c8cff;animation-delay:1s}.homeSparkles i:nth-child(4){color:#8c50ef;animation-delay:1.5s}
+@keyframes homeFloat{to{transform:translateY(-8px) rotate(7deg)}}
+
+.homeCitySign{
+  position:absolute;z-index:8;left:18px;top:32%;background:#fffbe9;border:5px solid #ffb531;
+  border-radius:16px;padding:8px 12px;text-align:center;font-size:15px;line-height:.92;font-weight:1000;color:#1d5eac;
+  box-shadow:0 6px 0 #d77f1d,0 12px 20px #13507e33;transform:rotate(-4deg)
+}
+.homeCitySign b{color:#ff4f90}
+.skyline{
+  bottom:32%;height:35%;
+  background:
+  linear-gradient(90deg,#ff715d 0 7%,transparent 7% 10%,#4e9cff 10% 17%,transparent 17% 20%,#ffd54d 20% 29%,transparent 29% 33%,#9a59ea 33% 42%,transparent 42% 46%,#ff5fa2 46% 57%,transparent 57% 61%,#4bc67b 61% 70%,transparent 70% 74%,#ff9f3b 74% 86%,transparent 86% 90%,#6ea7ff 90%);
+  filter:drop-shadow(0 -5px 0 #ffffff80)
+}
+.heroRoad{
+  left:5%;right:5%;bottom:-4%;height:50%;background:#7088a8;
+  clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);
+  border-top:5px solid #ffffff
+}
+.heroRoad:after{left:-18%;right:-18%;top:-10%;height:18%;background:#49c544}
+.roadMotion{position:absolute;left:49%;top:-10%;bottom:-10%;width:3%;background:repeating-linear-gradient(#fff 0 22px,transparent 22px 49px);animation:homeRoad 1.5s linear infinite}
+@keyframes homeRoad{to{background-position-y:49px}}
+.heroCar{
+  left:50%;bottom:2%;transform:translateX(-50%) scale(1.15);z-index:9;
+  animation:homeCarDrive 2.2s ease-in-out infinite alternate
+}
+@keyframes homeCarDrive{0%{transform:translateX(-50%) translateY(2px) rotate(-1deg) scale(1.13)}100%{transform:translateX(-50%) translateY(-5px) rotate(1deg) scale(1.17)}}
+.homeCoins{position:absolute;z-index:8;left:57%;top:57%;right:11%;display:flex;justify-content:space-between;pointer-events:none;transform:rotate(-8deg)}
+.homeCoins i{
+  width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(#ffe95b,#ffb51f);border:4px solid white;
+  color:#d88200;font-style:normal;font-size:14px;box-shadow:0 0 0 3px #ffcf37,0 6px 0 #d58a17;animation:coinBob 1.7s ease-in-out infinite alternate
+}
+.homeCoins i:nth-child(2){animation-delay:.35s}.homeCoins i:nth-child(3){animation-delay:.7s}
+@keyframes coinBob{to{transform:translateY(-8px) scale(1.06)}}
+.heroCopy{top:auto;bottom:31%;left:18%;right:18%;z-index:10}
+.heroCopy .kicker{font-size:9px}
+.heroCopy p{font-size:11px;padding:5px 10px;margin-top:6px}
+.heroCopy h1{display:none}
+
+/* Gameplay should visibly move even while waiting for a key. */
+.worldStage.moving .road3d{overflow:hidden}
+.roadFlow{
+  position:absolute;z-index:1;left:48.5%;top:-35%;bottom:-35%;width:3%;
+  background:repeating-linear-gradient(#fff 0 22px,transparent 22px 50px);
+  animation:roadFlow 1.8s linear infinite;
+  transform:perspective(140px) rotateX(8deg)
+}
+.roadFlow.fast{animation-duration:.72s}
+@keyframes roadFlow{to{background-position-y:100px}}
+.worldStage.moving .cityBack{animation:cityDrift 5.5s ease-in-out infinite alternate}
+.worldStage.moving .forestBack{animation:forestDrift 6.5s ease-in-out infinite alternate}
+@keyframes cityDrift{to{transform:translateX(-10px) scale(1.02)}}
+@keyframes forestDrift{to{transform:translateX(9px) scale(1.02)}}
+.motionCoins{
+  position:absolute;z-index:7;left:57%;top:48%;display:flex;gap:28px;transform:rotate(-8deg);pointer-events:none
+}
+.motionCoins i{
+  width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(#ffe75b,#ffb51d);
+  border:3px solid white;color:#d47d00;font-style:normal;font-size:11px;box-shadow:0 0 0 2px #ffcf3e,0 5px 0 #cc821a;
+  animation:coinTravel 2.8s linear infinite
+}
+.motionCoins i:nth-child(2){animation-delay:-.9s}.motionCoins i:nth-child(3){animation-delay:-1.8s}
+.motionCoins.fast i{animation-duration:1.35s}
+@keyframes coinTravel{
+  0%{transform:translate(24px,-62px) scale(.55);opacity:.2}
+  45%{opacity:1}
+  100%{transform:translate(-54px,150px) scale(1.18);opacity:0}
+}
+.playerCar{animation:playerCruise 1.35s ease-in-out infinite alternate}
+.playerCar .carArt{animation:none}
+@keyframes playerCruise{from{transform:translateX(-50%) translateY(2px) rotate(-1deg) scale(1.02)}to{transform:translateX(-50%) translateY(-5px) rotate(1deg) scale(1.05)}}
+.playerCar[key]{animation:none}
+.worldStage .playerCar{animation:noteKick .48s cubic-bezier(.2,.8,.2,1),playerCruise 1.35s .48s ease-in-out infinite alternate}
+@keyframes noteKick{0%{transform:translateX(-50%) translateY(0) scale(1)}45%{transform:translateX(-50%) translateY(-18px) scale(1.08)}100%{transform:translateX(-50%) translateY(0) scale(1.02)}}
+.raceCar{animation:raceKick .32s ease-out,playerCruise .85s .32s ease-in-out infinite alternate!important}
+@keyframes raceKick{50%{transform:translateX(-50%) translateY(-15px) scale(1.1)}}
+.streetlights span.on:before{animation:lampPop .5s ease-out}
+@keyframes lampPop{40%{transform:translateX(-50%) scale(1.35)}}
+.bridge .deck{transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.tunnel span{transition:background .28s,box-shadow .28s,transform .28s}
+.tunnel span.lit{transform:rotate(45deg) scale(1.2)}
