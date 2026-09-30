@@ -55,3 +55,23 @@ body.twinPlaying #endOverlay .unlock{font-size:14px;line-height:1.35}
 .modalCard,.card{border-color:#33416d}.closeBtn{min-height:42px;padding:9px 14px}.carCard{transition:transform .1s,border-color .12s}.carCard:active{transform:scale(.985)}
 @media(max-width:620px){.homeMenu{display:flex}.homeSecondary{grid-template-columns:1fr 1fr}.homeCard{padding:17px}.homeHero{height:102px;margin-top:6px}.homeCar{font-size:61px}.homeLogo{font-size:47px}.homeMenu .twinBtn,.homeMenu .storyBtn{min-height:61px}.menuCopy b{font-size:15px}.homeSecondary .btn{font-size:11px;min-height:44px}.homeTiny{display:none}}
 @media(max-height:720px){.homeHero{height:76px}.homeCar{font-size:48px}.homeHeroKeys{bottom:0}.homeHeroKeys i{width:34px;height:23px}.homeTag{display:none}.homeProgress{margin-bottom:7px}.homeMenu{gap:6px}.homeMenu .twinBtn,.homeMenu .storyBtn{min-height:54px;padding:7px 11px}.homeSecondary .btn{min-height:40px;padding:7px}.homeMenu .bossBtn{min-height:39px;padding:8px}}
+
+/* Story clarity pass: one obvious state at a time. Race HUD remains unchanged outside Story Mode. */
+body.storyPlaying .hud{display:none}
+body.storyPlaying .storyMission:not(.twinMission){top:18px;width:min(90%,500px);padding:12px 14px}
+body.storyPlaying .storyMissionTop{margin-bottom:6px}
+.memoryState{display:inline-flex;align-items:center;justify-content:center;min-width:135px;border-radius:999px;padding:7px 12px;margin:1px auto 4px;font-size:13px;font-weight:1000;letter-spacing:.08em}
+.memoryState.listen{background:#2a2240;color:#ffd166;border:1px solid #ffd1665c}
+.memoryState.repeat{background:#12352e;color:#7df0a3;border:1px solid #7df0a354}
+.memoryDots span{width:34px;height:34px;font-size:18px}
+.memoryDots span.now{background:#4a3c1f;border-color:#ffd166;color:#ffd166;transform:scale(1.12);box-shadow:0 0 20px #ffd16677}
+body.storyListening .pianoKey{opacity:.4;filter:saturate(.45);pointer-events:none}
+body.storyListening .keys:before{content:'LISTEN';position:absolute;left:50%;transform:translate(-50%,-29px);font-size:9px;letter-spacing:.18em;font-weight:1000;color:#ffd166;background:#090d1dcc;padding:4px 8px;border-radius:999px}
+.keys{position:relative}
+body.storyPlaying .sourceBadge,body.storyPlaying .modeBadge{display:none!important}
+body.storyPlaying .storyFooter{max-width:none}
+@media(max-width:520px){
+  body.storyPlaying .storyMission:not(.twinMission){top:12px;width:92%;padding:11px 12px}
+  .memoryState{font-size:12px;padding:6px 10px}
+  .memoryDots span{width:32px;height:32px}
+}
