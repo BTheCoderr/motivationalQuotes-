@@ -88,7 +88,7 @@ function updateHome(){
  }
 }
 function goHome(){
- reset(false);tutorialMode=false;bossMode=false;freePlay=false;
+ reset(false);tutorialMode=false;bossMode=false;freePlay=false;if(tutorialCallout)tutorialCallout.style.display='none';
  startOverlay.style.display='none';endOverlay.style.display='none';$('pauseModal').classList.remove('show');
  garageModal.classList.remove('show');$('homeOverlay').style.display='grid';
  $('pauseBtn').style.visibility='hidden';updateHome();draw(0);
@@ -113,10 +113,10 @@ function buildRoadObjects(){
  const usable=notes.filter((_,i)=>i>2);
  for(let i=3;i<usable.length;i+=4){
   const n=usable[i],safe=n.lane,wrong=(safe+2+(i%2))%4;
-  roadObjects.push({type:'coin',lane:safe,time:n.time+40,handled:false});
-  roadObjects.push({type:'cone',lane:wrong,time:n.time+40,handled:false});
-  if(i%12===3)roadObjects.push({type:'boost',lane:safe,time:n.time+120,handled:false});
-  if(i%16===7)roadObjects.push({type:'ramp',lane:safe,time:n.time+180,handled:false});
+  roadObjects.push({type:'coin',lane:safe,time:n.time+360,handled:false});
+  roadObjects.push({type:'cone',lane:wrong,time:n.time+360,handled:false});
+  if(i%12===3)roadObjects.push({type:'boost',lane:safe,time:n.time+440,handled:false});
+  if(i%16===7)roadObjects.push({type:'ramp',lane:safe,time:n.time+520,handled:false});
  }
 }
 function handleRoadObjects(t){
@@ -262,7 +262,7 @@ function startFreePlay(){
 }
 function reset(showStart=true){
  countingDown=false;paused=false;freePlay=false;running=false;cancelAnimationFrame(raf);stopAudio();prepare();
- modeBadge.classList.remove('practiceBadge');
+ modeBadge.classList.remove('practiceBadge','raceTypePill');
  modeBadge.textContent=mode==='kid'?'KID MODE · BIG HITS':'NORMAL MODE';
  document.querySelectorAll('.pianoKey').forEach(k=>k.classList.remove('hint'));
  if(showStart){startOverlay.style.display='grid';endOverlay.style.display='none'}draw(0);
