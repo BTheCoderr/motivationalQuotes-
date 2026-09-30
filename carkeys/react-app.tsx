@@ -132,7 +132,7 @@ function App(){
   function introMusic(){[0,1,2,3].forEach((n,i)=>later(()=>playNote(n),i*260));later(()=>drum('kick'),0);later(()=>drum('hat'),260);later(()=>drum('snare'),520)}
   function startStory(mode:PlayMode,targetWorld=0,targetScene=0){
     clearTimers();setPlayMode(mode);setWorldIndex(targetWorld);setSceneIndex(targetScene);setStep(0);setMemoryPhase('idle');setPulse(-1);setMessage('');setScreen('play');
-    saveProgress(prev=>({...prev,started:true,world:targetWorld,scene:targetScene,mode}));
+    saveProgress(prev=>prev.completedWorlds.includes(WORLDS[targetWorld].id)?prev:{...prev,started:true,world:targetWorld,scene:targetScene,mode});
     startBeat();introMusic();
     speak(targetWorld===0?"Ready? Let's bring the music back.":"Ready? Let's find the forest beat.");
     later(()=>beginScene(targetScene,mode,targetWorld),1050);
@@ -140,7 +140,7 @@ function App(){
   function continueAdventure(){startStory(progress.mode,progress.world,progress.scene)}
   function beginScene(index:number,mode=playMode,targetWorld=worldIndex){
     clearTimers();setWorldIndex(targetWorld);setSceneIndex(index);setStep(0);setPulse(-1);setMessage('');
-    saveProgress(prev=>({...prev,started:true,world:targetWorld,scene:index,mode}));
+    saveProgress(prev=>prev.completedWorlds.includes(WORLDS[targetWorld].id)?prev:{...prev,started:true,world:targetWorld,scene:index,mode});
     const s=WORLDS[targetWorld].scenes[index];
     if(s.memory){setMemoryPhase('listen');speak(s.line);later(()=>playMemory(s),500)}
     else{setMemoryPhase('idle');s.pattern.forEach((n:number,i:number)=>later(()=>playNote(n,true),i*180));later(()=>speak(s.line),180)}
