@@ -2,7 +2,7 @@
 const STORIES=window.CARKEYS_STORIES||[];
 const labels=['C','D','E','F'];
 const $=id=>document.getElementById(id);
-let active=false,selected=null,sceneIndex=0,step=0,locked=false,box=null,mistakes=0,runToken=0;
+let active=false,selected=null,sceneIndex=0,step=0,locked=false,box=null,mistakes=0,runToken=0,twinMode=false;
 let previousAgain=null;
 
 function doneKey(id){return 'carkeys-story-done-'+id}
@@ -80,18 +80,23 @@ function syncStoryChrome(){
 function setStoryRoadPattern(){
   if(!active||!selected)return;
   const s=selected.scenes[sceneIndex];
-  if(s.listenFirst){try{notes=[]}catch{};return}
+  if(s.listenFirst&&!twinMode){try{notes=[]}catch{};return}
   let elapsed=0;
   try{elapsed=Math.max(0,performance.now()-startTime)}catch{}
-  const base=elapsed+1050;
+  const base=elapsed+(twinMode?900:1050);
   try{
-    notes=s.pattern.map((lane,i)=>({time:base+i*640,lane,hit:i<step,missed:false,id:'story-'+sceneIndex+'-'+i}));
+    if(twinMode){
+      notes=step<s.pattern.length?[{time:base,lane:s.pattern[step],hit:false,missed:false,id:'twin-'+sceneIndex+'-'+step}]:[];
+    }else{
+      notes=s.pattern.map((lane,i)=>({time:base+i*640,lane,hit:i<step,missed:false,id:'story-'+sceneIndex+'-'+i}));
+    }
   }catch{}
 }
 function cleanupStory(){
   runToken++;active=false;locked=false;mistakes=0;clearGlow();stopSpeech();
-  if(box)box.style.display='none';
+  if(box){box.style.display='none';box.classList.remove('twinMission')}
   try{notes=[];freePlay=false}catch{}
+  twinMode=false;window.CARKEYS_TWIN_MODE=false;document.body.classList.remove('twinPlaying');
   restoreGameChrome();
   if(previousAgain&&$('againBtn'))$('againBtn').onclick=previousAgain;
   if($('againBtn'))$('againBtn').textContent='RACE AGAIN';
@@ -159,11 +164,19 @@ function renderMission(){
   const s=selected.scenes[sceneIndex];
   const memoryMode=!!s.listenFirst;
   box.style.display='block';
-  box.innerHTML='<div class="storyMissionTop"><span>'+s.icon+' CHAPTER '+(sceneIndex+1)+'/'+selected.scenes.length+'</span><b>'+s.name.toUpperCase()+'</b></div>'+
-    '<div class="storyMissionText">'+s.prompt+'</div>'+
-    '<div class="storyDots">'+s.pattern.map((n,i)=>'<span class="'+(i<step?'done':i===step?'now':'')+'">'+(memoryMode?'•':labels[n])+'</span>').join('')+'</div>';
+  box.classList.toggle('twinMission',twinMode);
+  if(twinMode){
+    const next=step<s.pattern.length?labels[s.pattern[step]]:'★';
+    box.innerHTML='<div class="twinMissionIcon">'+s.icon+'</div>'+
+      '<div class="twinMissionTitle">'+s.name.toUpperCase()+'</div>'+
+      '<div class="twinMissionText">'+(locked?'LISTEN…':'TAP <b>'+next+'</b>')+'</div>';
+  }else{
+    box.innerHTML='<div class="storyMissionTop"><span>'+s.icon+' CHAPTER '+(sceneIndex+1)+'/'+selected.scenes.length+'</span><b>'+s.name.toUpperCase()+'</b></div>'+
+      '<div class="storyMissionText">'+s.prompt+'</div>'+
+      '<div class="storyDots">'+s.pattern.map((n,i)=>'<span class="'+(i<step?'done':i===step?'now':'')+'">'+(memoryMode?'•':labels[n])+'</span>').join('')+'</div>';
+  }
   clearGlow();syncStoryChrome();
-  if(!locked&&(s.guide||mistakes>=2)&&!s.listenFirst&&step<s.pattern.length)glow(s.pattern[step],true);
+  if(!locked&&(twinMode||s.guide||mistakes>=2)&&(!s.listenFirst||twinMode)&&step<s.pattern.length)glow(s.pattern[step],true);
 }
 function demoPattern(){
   if(!active||!selected)return;
@@ -183,13 +196,17 @@ function demoPattern(){
 }
 function beginScene(){
   if(!active||!selected)return;
-  step=0;locked=false;mistakes=0;
+  step=0;locked=!!(twinMode&&selected.scenes[sceneIndex].listenFirst);mistakes=0;
   const s=selected.scenes[sceneIndex];
   renderMission();
   if(s.listenFirst){try{notes=[]}catch{}}
   else setStoryRoadPattern();
-  musicalLine(s.prompt,s.pattern);
-  if(s.listenFirst)setTimeout(demoPattern,900);
+  if(twinMode){
+    speak(s.listenFirst?'Listen to the sound.':s.name+'. Tap '+labels[s.pattern[0]]+'.',.92,1.12);
+  }else{
+    musicalLine(s.prompt,s.pattern);
+  }
+  if(s.listenFirst)setTimeout(demoPattern,twinMode?550:900);
 }
 function celebrate(){
   if(!active||!selected)return;
@@ -203,7 +220,7 @@ function celebrate(){
     if(!active||token!==runToken)return;
     if(sceneIndex<selected.scenes.length-1){sceneIndex++;beginScene()}
     else finishStory();
-  },2200);
+  },twinMode?1050:2200);
 }
 function finishStory(){
   active=false;locked=false;clearGlow();stopSpeech();if(box)box.style.display='none';
@@ -248,9 +265,14 @@ function storyHit(lane){
     if(step>=s.pattern.length)celebrate();else{renderMission();setStoryRoadPattern()}
   }else{
     mistakes++;
-    try{showFlash(mistakes>=2?'HERE’S A CLUE':'LISTEN AGAIN','#67e8ff',false);buzz(25)}catch{}
-    step=0;renderMission();setStoryRoadPattern();
-    if(s.listenFirst||mistakes>=2)setTimeout(demoPattern,450);
+    if(twinMode){
+      try{showFlash('TRY '+labels[want],'#67e8ff',false);buzz(20)}catch{}
+      renderMission();setStoryRoadPattern();glow(want,true);
+    }else{
+      try{showFlash(mistakes>=2?'HERE’S A CLUE':'LISTEN AGAIN','#67e8ff',false);buzz(25)}catch{}
+      step=0;renderMission();setStoryRoadPattern();
+      if(s.listenFirst||mistakes>=2)setTimeout(demoPattern,450);
+    }
   }
   return true;
 }
@@ -259,6 +281,7 @@ function startSelectedStory(){
   runToken++;const token=runToken;
   hideAllStoryScreens();$('homeOverlay').style.display='none';$('endOverlay').style.display='none';
   active=true;sceneIndex=0;step=0;locked=false;mistakes=0;
+  window.CARKEYS_TWIN_MODE=twinMode;document.body.classList.toggle('twinPlaying',twinMode);
   $('pauseBtn').style.visibility='visible';
   try{
     tutorialMode=false;bossMode=false;freePlay=true;prepare();notes=[];running=true;
@@ -270,11 +293,22 @@ function startSelectedStory(){
     modeBadge.classList.add('raceTypePill');
   }catch{}
   const refrain=selected.id==='city-music'?'Keys in the night, wheels on the road. Find every sound and bring music home.':'Step with the forest, beat by beat. Help every animal find their feet.';
-  musicalLine(refrain,[0,1,2,3]);
-  setTimeout(()=>{if(active&&token===runToken)beginScene()},1150);
+  if(twinMode){
+    speak('Let’s go! Help the city find its music.',.94,1.15);
+    setTimeout(()=>{if(active&&token===runToken)beginScene()},650);
+  }else{
+    musicalLine(refrain,[0,1,2,3]);
+    setTimeout(()=>{if(active&&token===runToken)beginScene()},1150);
+  }
+}
+function startTwinMode(){
+  if(!STORIES.length)return;
+  selected=STORIES[0];twinMode=true;window.CARKEYS_TWIN_MODE=true;
+  startSelectedStory();
 }
 function bind(){
   ensureBox();
+  if($('twinModeBtn'))$('twinModeBtn').onclick=startTwinMode;
   if($('storyMenuBtn'))$('storyMenuBtn').onclick=openMap;
   if($('mapBackBtn'))$('mapBackBtn').onclick=()=>{cleanupStory();$('worldMapOverlay').style.display='none';$('homeOverlay').style.display='grid';try{updateHome()}catch{}};
   if($('storyBackBtn'))$('storyBackBtn').onclick=()=>{$('storyOverlay').style.display='none';renderMap();$('worldMapOverlay').style.display='grid'};
