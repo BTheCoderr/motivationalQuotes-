@@ -78,6 +78,7 @@ function syncStoryChrome(){
 function setStoryRoadPattern(){
   if(!active||!selected)return;
   const s=selected.scenes[sceneIndex];
+  if(s.listenFirst){try{notes=[]}catch{};return}
   let elapsed=0;
   try{elapsed=Math.max(0,performance.now()-startTime)}catch{}
   const base=elapsed+1050;
@@ -242,7 +243,7 @@ function storyHit(lane){
       targetLane=lane;speed=Math.min(132,speed+8);score+=600;boost=Math.min(100,boost+8);
       updateHud();buzz(18);
     }catch{}
-    if(step>=s.pattern.length)celebrate();else renderMission();
+    if(step>=s.pattern.length)celebrate();else{renderMission();setStoryRoadPattern()}
   }else{
     mistakes++;
     try{showFlash(mistakes>=2?'HERE’S A CLUE':'LISTEN AGAIN','#67e8ff',false);buzz(25)}catch{}
