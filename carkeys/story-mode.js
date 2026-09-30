@@ -2,7 +2,7 @@
 const STORIES=window.CARKEYS_STORIES||[];
 const labels=['C','D','E','F'];
 const $=id=>document.getElementById(id);
-let active=false,selected=null,sceneIndex=0,step=0,locked=false,box=null,mistakes=0;
+let active=false,selected=null,sceneIndex=0,step=0,locked=false,box=null,mistakes=0,runToken=0;
 let previousAgain=null;
 
 function doneKey(id){return 'carkeys-story-done-'+id}
@@ -48,7 +48,7 @@ function hideAllStoryScreens(){
   if($('storyOverlay'))$('storyOverlay').style.display='none';
 }
 function cleanupStory(){
-  active=false;locked=false;mistakes=0;clearGlow();stopSpeech();
+  runToken++;active=false;locked=false;mistakes=0;clearGlow();stopSpeech();
   if(box)box.style.display='none';
   try{freePlay=false}catch{}
   if(previousAgain&&$('againBtn'))$('againBtn').onclick=previousAgain;
@@ -119,12 +119,14 @@ function renderMission(){
   if(!locked&&(s.guide||mistakes>=2)&&!s.listenFirst)glow(s.pattern[step],true);
 }
 function demoPattern(){
-  const s=selected.scenes[sceneIndex];
+  if(!active||!selected)return;
+  const token=runToken,s=selected.scenes[sceneIndex];
   locked=true;clearGlow();
   const text=box?.querySelector('.storyMissionText');
   if(text)text.textContent=s.listenFirst?'Listen… remember the sound.':'Watch and listen. The road is giving you a clue.';
   s.pattern.forEach((n,i)=>tone(n,i*500));
   setTimeout(()=>{
+    if(!active||token!==runToken)return;
     locked=false;step=0;
     if(text)text.textContent=s.listenFirst?'Your turn. Play the echo back!':s.prompt;
     renderMission();
@@ -132,19 +134,22 @@ function demoPattern(){
   },s.pattern.length*500+450);
 }
 function beginScene(){
+  if(!active||!selected)return;
   step=0;locked=false;mistakes=0;renderMission();
   const s=selected.scenes[sceneIndex];
   musicalLine(s.prompt,s.pattern);
   if(s.listenFirst)setTimeout(demoPattern,900);
 }
 function celebrate(){
-  const s=selected.scenes[sceneIndex];
+  if(!active||!selected)return;
+  const token=runToken,s=selected.scenes[sceneIndex];
   locked=true;clearGlow();
   try{showFlash(sceneIndex===selected.scenes.length-1?'STORY CLEAR!':'MISSION CLEAR!','#ffd166',true)}catch{}
   speak(s.success,.92,1.18);
   const text=box?.querySelector('.storyMissionText');if(text)text.textContent=s.success;
   box?.querySelectorAll('.storyDots span').forEach(x=>x.className='done');
   setTimeout(()=>{
+    if(!active||token!==runToken)return;
     if(sceneIndex<selected.scenes.length-1){sceneIndex++;beginScene()}
     else finishStory();
   },2200);
@@ -178,6 +183,7 @@ function finishStory(){
 }
 function storyHit(lane){
   if(!active||locked)return false;
+  try{if(!running||paused)return false}catch{}
   const s=selected.scenes[sceneIndex],want=s.pattern[step];
   try{noteSound(lane,lane===want?'perfect':'miss')}catch{}
   if(lane===want){
@@ -197,6 +203,7 @@ function storyHit(lane){
 }
 function startSelectedStory(){
   if(!selected)return;
+  runToken++;const token=runToken;
   hideAllStoryScreens();$('homeOverlay').style.display='none';$('endOverlay').style.display='none';
   active=true;sceneIndex=0;step=0;locked=false;mistakes=0;
   $('pauseBtn').style.visibility='visible';
@@ -208,7 +215,7 @@ function startSelectedStory(){
   }catch{}
   const refrain=selected.id==='city-music'?'Keys in the night, wheels on the road. Find every sound and bring music home.':'Step with the forest, beat by beat. Help every animal find their feet.';
   musicalLine(refrain,[0,1,2,3]);
-  setTimeout(beginScene,1150);
+  setTimeout(()=>{if(active&&token===runToken)beginScene()},1150);
 }
 function bind(){
   ensureBox();
@@ -227,6 +234,22 @@ function bind(){
   ['homeFromPause','homeFromEnd'].forEach(id=>{
     if($(id))$(id).addEventListener('click',()=>{cleanupStory();hideAllStoryScreens()},true);
   });
+  if($('pauseBtn'))$('pauseBtn').addEventListener('click',()=>{
+    if(!active)return;
+    setTimeout(()=>{
+      if(!$('pauseModal').classList.contains('show'))return;
+      $('pauseTitle').textContent='STORY PAUSED';
+      $('pauseText').textContent='The adventure is waiting right here.';
+      $('quitPracticeBtn').style.display='none';
+    },0);
+  });
+  if($('restartBtn'))$('restartBtn').addEventListener('click',e=>{
+    if(!active)return;
+    e.preventDefault();e.stopImmediatePropagation();
+    runToken++;active=false;clearGlow();stopSpeech();
+    try{running=false;cancelAnimationFrame(raf);stopAudio()}catch{}
+    setTimeout(startSelectedStory,20);
+  },true);
   renderMap();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
