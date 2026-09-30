@@ -5,7 +5,7 @@ declare namespace JSX { interface IntrinsicElements { [elemName: string]: any } 
 const {useEffect,useMemo,useRef,useState}=React;
 const NOTES=['C','D','E','F'];
 const FREQ=[261.63,293.66,329.63,349.23];
-const COLORS=['#53e7ff','#bfff5b','#ffd45d','#ff6cc8'];
+const COLORS=['#ff3f86','#ffd62f','#48db3f','#a34bf4'];
 const CARS=[
   {id:'starter',name:'Starter Coupe',unlock:'Ready',accent:'#23a8ff',image:'/assets/cars/starter.webp',rarity:'COMMON',speed:48,boost:42},
   {id:'neon',name:'Neon Runner',unlock:'Finish 1 race',accent:'#8b35ff',image:'/assets/cars/neon.webp',rarity:'RARE',speed:66,boost:70},
@@ -19,7 +19,7 @@ const WORLDS=[
     intro:'The lights are dark. The bridge is asleep. Echo Tunnel forgot its song. Your keys can wake everything back up.',
     reward:150,theme:'city',
     scenes:[
-      {id:'lights',title:'Wake the Streetlights',icon:'💡',pattern:[0,0,0,0],line:"Let's wake the lights.",success:'Whoa... the lights are waking up!'},
+      {id:'lights',title:'Wake the Lights',icon:'💡',pattern:[0,0,0,0],line:"Let's wake the lights.",success:'Whoa... the lights are waking up!'},
       {id:'bridge',title:'Open the Bridge',icon:'🌉',pattern:[0,1,0,1],line:'The bridge needs our rhythm.',success:'Nice! The bridge is open!'},
       {id:'tunnel',title:'Echo Tunnel',icon:'🔊',pattern:[0,1,2,1],memory:true,line:'Shh... listen.',success:'You got the echo!'},
       {id:'home',title:'Bring Music Home',icon:'✨',pattern:[0,1,2,3],line:'One more melody. Bring the music home!',success:'Look! The whole city is singing!'},
