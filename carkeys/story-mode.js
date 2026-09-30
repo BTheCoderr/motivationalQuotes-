@@ -53,6 +53,7 @@ function restoreGameChrome(){
   if($('storyFooter'))$('storyFooter').style.display='none';
   if($('boostLabel'))$('boostLabel').textContent='BOOST';
   if($('sourceLabel'))$('sourceLabel').style.display='';
+  document.querySelector('.bottom')?.classList.remove('storyMode');
   try{updateHud()}catch{}
 }
 function syncStoryChrome(){
@@ -73,6 +74,7 @@ function syncStoryChrome(){
   }
   if($('boostLabel'))$('boostLabel').textContent='MUSIC';
   if($('sourceLabel'))$('sourceLabel').style.display='none';
+  document.querySelector('.bottom')?.classList.add('storyMode');
   try{updateHud()}catch{}
 }
 function setStoryRoadPattern(){
