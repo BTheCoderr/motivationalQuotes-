@@ -326,10 +326,27 @@ function hitLane(lane){
  updateHud();
 }
 function updateHud(){
- scoreEl.textContent=score.toLocaleString();comboEl.textContent=combo+'x';speedEl.textContent=Math.round(speed);boostEl.style.width=boost+'%';
+ const storyUi=window.CARKEYS_STORY_UI;
+ speedEl.textContent=Math.round(speed);boostEl.style.width=boost+'%';
  const pos=$('position');
- if(freePlay||tutorialMode){pos.textContent=freePlay?'FREE':'LEARN';pos.className=''}
- else{const first=playerDistance>=aiDistance;pos.textContent=first?'1st':'2nd';pos.className=first?'positionWin':'positionLose'}
+ if(storyUi&&storyUi.active){
+  if($('hudScoreLabel'))$('hudScoreLabel').textContent='CHAPTER';
+  if($('hudComboLabel'))$('hudComboLabel').textContent='PATTERN';
+  if($('hudPositionLabel'))$('hudPositionLabel').textContent='WORLD';
+  if($('hudSpeedLabel'))$('hudSpeedLabel').textContent='SPEED';
+  scoreEl.textContent=storyUi.chapter||'1/4';
+  comboEl.textContent=storyUi.pattern||'0/4';
+  pos.textContent=storyUi.worldShort||'STORY';
+  pos.className='';
+ }else{
+  if($('hudScoreLabel'))$('hudScoreLabel').textContent='SCORE';
+  if($('hudComboLabel'))$('hudComboLabel').textContent='COMBO';
+  if($('hudPositionLabel'))$('hudPositionLabel').textContent='POSITION';
+  if($('hudSpeedLabel'))$('hudSpeedLabel').textContent='SPEED';
+  scoreEl.textContent=score.toLocaleString();comboEl.textContent=combo+'x';
+  if(freePlay||tutorialMode){pos.textContent=freePlay?'FREE':'LEARN';pos.className=''}
+  else{const first=playerDistance>=aiDistance;pos.textContent=first?'1st':'2nd';pos.className=first?'positionWin':'positionLose'}
+ }
  updateEngine();
 }
 function calculateStars(){
