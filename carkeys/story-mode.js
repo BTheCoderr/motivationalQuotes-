@@ -2,7 +2,7 @@
 const STORIES=window.CARKEYS_STORIES||[];
 const labels=['C','D','E','F'];
 const $=id=>document.getElementById(id);
-let active=false,selected=null,sceneIndex=0,step=0,locked=false,box=null,mistakes=0,runToken=0,twinMode=false;
+let active=false,selected=null,sceneIndex=0,step=0,locked=false,box=null,mistakes=0,runToken=0,twinMode=false,memoryPhase='idle';
 let previousAgain=null;
 
 function doneKey(id){return 'carkeys-story-done-'+id}
@@ -49,10 +49,13 @@ function hideAllStoryScreens(){
 }
 function restoreGameChrome(){
   window.CARKEYS_STORY_UI=null;
+  memoryPhase='idle';
+  document.body.classList.remove('storyPlaying','storyListening');
   if($('songSelect'))$('songSelect').style.display='';
   if($('storyFooter'))$('storyFooter').style.display='none';
   if($('boostLabel'))$('boostLabel').textContent='BOOST';
   if($('sourceLabel'))$('sourceLabel').style.display='';
+  if($('modeBadge'))$('modeBadge').style.display='';
   document.querySelector('.bottom')?.classList.remove('storyMode');
   try{updateHud()}catch{}
 }
@@ -63,17 +66,19 @@ function syncStoryChrome(){
   window.CARKEYS_STORY_UI={
     active:true,
     chapter:(sceneIndex+1)+'/'+selected.scenes.length,
-    pattern:Math.min(step,s.pattern.length)+'/'+s.pattern.length,
+    pattern:s.listenFirst&&memoryPhase==='listen'?'LISTEN':Math.min(step,s.pattern.length)+'/'+s.pattern.length,
     worldShort:short.length>10?short.split(' ')[0]:short
   };
   if($('songSelect'))$('songSelect').style.display='none';
   if($('storyFooter')){
     $('storyFooter').style.display='flex';
     $('storyFooterWorld').textContent=selected.mapTitle.toUpperCase();
-    $('storyFooterChapter').textContent='CHAPTER '+(sceneIndex+1)+' · '+s.name.toUpperCase();
+    $('storyFooterChapter').textContent='STORY '+String(selected.number||1).padStart(2,'0')+' · ADVENTURE IN PROGRESS';
   }
   if($('boostLabel'))$('boostLabel').textContent='MUSIC';
   if($('sourceLabel'))$('sourceLabel').style.display='none';
+  if($('modeBadge'))$('modeBadge').style.display='none';
+  document.body.classList.add('storyPlaying');
   document.querySelector('.bottom')?.classList.add('storyMode');
   try{updateHud()}catch{}
 }
@@ -170,10 +175,16 @@ function renderMission(){
     box.innerHTML='<div class="twinMissionIcon">'+s.icon+'</div>'+
       '<div class="twinMissionTitle">'+s.name.toUpperCase()+'</div>'+
       '<div class="twinMissionText">'+(locked?'LISTEN…':'TAP <b>'+next+'</b>')+'</div>';
+  }else if(memoryMode){
+    const listening=memoryPhase==='listen';
+    box.innerHTML='<div class="storyMissionTop"><span>'+s.icon+' CHAPTER '+(sceneIndex+1)+'/'+selected.scenes.length+'</span><b>'+s.name.toUpperCase()+'</b></div>'+
+      '<div class="memoryState '+(listening?'listen':'repeat')+'">'+(listening?'👂 LISTEN':'🎹 YOUR TURN')+'</div>'+
+      '<div class="storyMissionText">'+(listening?'Remember the 4 sounds.':'Play the 4 sounds back.')+'</div>'+
+      '<div class="storyDots memoryDots">'+s.pattern.map((n,i)=>'<span class="'+(!listening&&i<step?'done':'')+'">•</span>').join('')+'</div>';
   }else{
     box.innerHTML='<div class="storyMissionTop"><span>'+s.icon+' CHAPTER '+(sceneIndex+1)+'/'+selected.scenes.length+'</span><b>'+s.name.toUpperCase()+'</b></div>'+
       '<div class="storyMissionText">'+s.prompt+'</div>'+
-      '<div class="storyDots">'+s.pattern.map((n,i)=>'<span class="'+(i<step?'done':i===step?'now':'')+'">'+(memoryMode?'•':labels[n])+'</span>').join('')+'</div>';
+      '<div class="storyDots">'+s.pattern.map((n,i)=>'<span class="'+(i<step?'done':i===step?'now':'')+'">'+labels[n]+'</span>').join('')+'</div>';
   }
   clearGlow();syncStoryChrome();
   if(!locked&&(twinMode||s.guide||mistakes>=2)&&(!s.listenFirst||twinMode)&&step<s.pattern.length)glow(s.pattern[step],true);
@@ -181,32 +192,42 @@ function renderMission(){
 function demoPattern(){
   if(!active||!selected)return;
   const token=runToken,s=selected.scenes[sceneIndex];
-  locked=true;clearGlow();
+  locked=true;memoryPhase=s.listenFirst?'listen':'idle';clearGlow();
+  document.body.classList.toggle('storyListening',!!s.listenFirst);
   try{notes=[]}catch{}
-  const text=box?.querySelector('.storyMissionText');
-  if(text)text.textContent=s.listenFirst?'Listen… remember the sound.':'Watch and listen. The road is giving you a clue.';
-  s.pattern.forEach((n,i)=>tone(n,i*500));
+  renderMission();
+  const dots=()=>box?.querySelectorAll('.memoryDots span')||[];
+  s.pattern.forEach((n,i)=>{
+    setTimeout(()=>{
+      if(!active||token!==runToken)return;
+      const all=dots();all.forEach(x=>x.classList.remove('now'));
+      if(all[i])all[i].classList.add('now');
+      tone(n,0);
+    },i*560);
+  });
   setTimeout(()=>{
     if(!active||token!==runToken)return;
-    locked=false;step=0;
-    if(text)text.textContent=s.listenFirst?'Your turn. Play the echo back!':s.prompt;
+    locked=false;step=0;memoryPhase=s.listenFirst?'repeat':'idle';
+    document.body.classList.remove('storyListening');
     renderMission();setStoryRoadPattern();
     if(s.listenFirst)clearGlow();
-  },s.pattern.length*500+450);
+  },s.pattern.length*560+500);
 }
 function beginScene(){
   if(!active||!selected)return;
-  step=0;locked=!!(twinMode&&selected.scenes[sceneIndex].listenFirst);mistakes=0;
+  step=0;mistakes=0;
   const s=selected.scenes[sceneIndex];
+  memoryPhase=s.listenFirst?'listen':'idle';
+  locked=!!s.listenFirst;
   renderMission();
   if(s.listenFirst){try{notes=[]}catch{}}
   else setStoryRoadPattern();
   if(twinMode){
-    speak(s.listenFirst?'Listen to the sound.':s.name+'. Tap '+labels[s.pattern[0]]+'.',.92,1.12);
-  }else{
+    speak(s.listenFirst?'Listen first. Then copy the sounds.':s.name+'. Tap '+labels[s.pattern[0]]+'.',.92,1.12);
+  }else if(!s.listenFirst){
     musicalLine(s.prompt,s.pattern);
   }
-  if(s.listenFirst)setTimeout(demoPattern,twinMode?550:900);
+  if(s.listenFirst)setTimeout(demoPattern,twinMode?450:650);
 }
 function celebrate(){
   if(!active||!selected)return;
@@ -268,10 +289,14 @@ function storyHit(lane){
     if(twinMode){
       try{showFlash('TRY '+labels[want],'#67e8ff',false);buzz(20)}catch{}
       renderMission();setStoryRoadPattern();glow(want,true);
+    }else if(s.listenFirst){
+      try{showFlash('LET’S HEAR IT AGAIN','#67e8ff',false);buzz(25)}catch{}
+      step=0;memoryPhase='listen';locked=true;renderMission();
+      setTimeout(demoPattern,500);
     }else{
-      try{showFlash(mistakes>=2?'HERE’S A CLUE':'LISTEN AGAIN','#67e8ff',false);buzz(25)}catch{}
+      try{showFlash(mistakes>=2?'HERE’S A CLUE':'TRY AGAIN','#67e8ff',false);buzz(25)}catch{}
       step=0;renderMission();setStoryRoadPattern();
-      if(s.listenFirst||mistakes>=2)setTimeout(demoPattern,450);
+      if(mistakes>=2)setTimeout(demoPattern,450);
     }
   }
   return true;
