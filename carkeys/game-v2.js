@@ -83,7 +83,8 @@ function updateHome(){
  const boss=$('bossBtn');
  if(boss){
   const beaten=localStorage.getItem('carkeys-boss-1')==='1';
-  boss.disabled=totalStars<6;
+  boss.disabled=false;
+  boss.classList.toggle('lockedAction',totalStars<6);
   boss.textContent=beaten?'👑 BOSS BEATEN · RACE AGAIN':(totalStars<6?'👑 BOSS RACE · 6★':'👑 BOSS RACE · READY');
  }
 }
@@ -391,7 +392,9 @@ function renderGarage(){
   const el=document.createElement('div');el.className='carCard '+(!open?'locked ':'')+(equipped===c.slug?'equipped':'');
   el.innerHTML='<div class="carVisual">'+carEmoji(c.slug)+'</div><h3>'+c.name+'</h3><p>'+c.rarity.toUpperCase()+' · Speed '+c.base_speed+' · Boost '+c.boost+'</p>'+
    (open?'<button class="equipBtn">'+(equipped===c.slug?'EQUIPPED':'DRIVE THIS')+'</button>':'<button class="lockedBtn">🔒 '+lockText(c.slug)+'</button>');
-  if(open)el.querySelector('button').onclick=()=>{equipped=c.slug;saveMeta();renderGarage();toast(c.name+' equipped');draw(running?performance.now()-startTime:0)};
+  const carBtn=el.querySelector('button');
+  if(open)carBtn.onclick=()=>{equipped=c.slug;saveMeta();renderGarage();toast(c.name+' equipped');draw(running?performance.now()-startTime:0)};
+  else carBtn.onclick=()=>toast(lockText(c.slug)+' 🔒');
   garageGrid.appendChild(el);
  });
  const row=$('paintRow');row.innerHTML='<span>PAINT</span>';
