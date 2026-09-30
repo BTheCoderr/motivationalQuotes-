@@ -7,10 +7,10 @@ const NOTES=['C','D','E','F'];
 const FREQ=[261.63,293.66,329.63,349.23];
 const COLORS=['#53e7ff','#bfff5b','#ffd45d','#ff6cc8'];
 const CARS=[
-  {id:'starter',name:'Starter Coupe',unlock:'Ready',accent:'#53e7ff'},
-  {id:'neon',name:'Neon Runner',unlock:'Finish 1 race',accent:'#8f7cff'},
-  {id:'rhythm',name:'Rhythm Roadster',unlock:'Earn 6 stars',accent:'#ff6cc8'},
-  {id:'grand',name:'Grand Touring',unlock:'Earn 10 stars',accent:'#ffd45d'},
+  {id:'starter',name:'Starter Coupe',unlock:'Ready',accent:'#23a8ff',image:'/assets/cars/starter.webp',rarity:'COMMON',speed:48,boost:42},
+  {id:'neon',name:'Neon Runner',unlock:'Finish 1 race',accent:'#8b35ff',image:'/assets/cars/neon.webp',rarity:'RARE',speed:66,boost:70},
+  {id:'rhythm',name:'Rhythm Roadster',unlock:'Earn 6 stars',accent:'#ff4fa3',image:'/assets/cars/rhythm.webp',rarity:'EPIC',speed:78,boost:82},
+  {id:'grand',name:'Grand Touring',unlock:'Earn 10 stars',accent:'#ffbe18',image:'/assets/cars/grand.webp',rarity:'LEGENDARY',speed:90,boost:94},
 ];
 const WORLDS=[
   {
@@ -222,12 +222,10 @@ function App(){
     {screen==='garage'&&<Garage selected={selectedCar} stars={progress.stars} races={progress.races} onSelect={setSelectedCar} onBack={goHome} />}
     {screen==='results'&&<Results kind={resultKind} world={WORLDS[resultWorld]} nextWorld={resultNextWorld===null?null:WORLDS[resultNextWorld]} mode={playMode} onContinue={continueAfterResult} onAgain={()=>resultKind==='race'?startRace():startStory(playMode,resultWorld,0)} onHome={goHome} />}
   </main>
-
-  </main>
 }
 
 function TopBar({coins,stars,backend,onHome,compact}:any){
-  return <header className={'top '+(compact?'compact':'')}><button className="brand" onClick={onHome}><span className="logoNote">♪</span><span>CARKEYS</span></button><div className="topMeta"><span className={'cloud '+backend}>● {backend==='online'?'ONLINE':backend==='checking'?'CONNECTING':'OFFLINE'}</span><span className="starsMeta">★ {stars}</span><span className="coins">🪙 {coins}</span></div></header>
+  return <header className={'top '+(compact?'compact':'')}><button className="brand" onClick={onHome} aria-label="CarKeys home"><span className="logoNote">♪</span><span className="brandWord">CarKeys</span></button><div className="topMeta"><span className={'cloud '+backend}>● {backend==='online'?'READY':backend==='checking'?'CONNECTING':'OFFLINE'}</span><span className="starsMeta">⭐ {stars}</span><span className="coins">🪙 {coins}</span></div></header>
 }
 function Home({progress,hasContinue,continueWorld,continueScene,onContinue,onTwin,onStory,onRace,onPiano,onGarage}:any){
   return <section className="homeScreen"><div className="heroWorld"><div className="moon"/><div className="skyline"/><div className="heroRoad"><div className="lane l1"/><div className="lane l2"/><div className="lane l3"/><div className="heroCar"><CarGraphic accent="#53e7ff"/></div></div><div className="heroCopy"><span className="kicker">MUSIC POWERS THE ROAD</span><h1>DRIVE THE<br/><em>ADVENTURE.</em></h1><p>Play the keys. Change the world.</p></div></div>
@@ -279,7 +277,7 @@ function PianoScreen({onKey,onHome}:any){
 }
 function Garage({selected,stars,races,onSelect,onBack}:any){
   const unlocked=(i:number)=>i===0||(i===1&&races>=1)||(i===2&&stars>=6)||(i===3&&stars>=10);
-  return <section className="panelScreen garage"><button className="back" onClick={onBack}>← HOME</button><div className="mapHeader"><span>GARAGE</span><h2>PICK YOUR RIDE.</h2><p>{stars} ★ · {races} races finished</p></div><div className="carShowcase"><CarGraphic accent={(CARS.find(c=>c.id===selected)||CARS[0]).accent}/></div><div className="carGrid">{CARS.map((car,i)=><button key={car.id} className={(selected===car.id?'selected ':'')+(!unlocked(i)?'locked':'')} onClick={()=>unlocked(i)&&onSelect(car.id)}><i style={{background:car.accent}}/><b>{car.name}</b><small>{unlocked(i)?(selected===car.id?'EQUIPPED':'READY'):car.unlock}</small></button>)}</div></section>
+  return <section className="panelScreen garage"><button className="back bubbleBack" onClick={onBack}>← DONE</button><div className="mapHeader garageTitle"><span>⭐ YOUR RIDES ⭐</span><h2>GARAGE</h2><p>{stars} stars · {races} races finished</p></div><div className="carGrid">{CARS.map((car,i)=><button key={car.id} className={'carCard '+(selected===car.id?'selected ':'')+(!unlocked(i)?'locked':'')} onClick={()=>unlocked(i)&&onSelect(car.id)} style={{'--accent':car.accent}}><div className="carCardArt"><CarGraphic accent={car.accent}/></div><b>{car.name}</b><em>{car.rarity} · Speed {car.speed} · Boost {car.boost}</em><small>{unlocked(i)?(selected===car.id?'✓ EQUIPPED':'TAP TO DRIVE'):'🔒 '+car.unlock}</small></button>)}</div><div className="paintBar"><b>🎨 PAINT</b><span/><span/><span/><span/><span/><span/></div></section>
 }
 function Results({kind,world,nextWorld,onContinue,onAgain,onHome}:any){
   const story=kind==='story';
@@ -289,24 +287,8 @@ function Results({kind,world,nextWorld,onContinue,onAgain,onHome}:any){
 function ProgressDots({total,step,pulse=-1,listening=false}:any){return <div className="progressDots">{Array.from({length:total},(_:any,i:number)=><i key={i} className={(i<step?'done ':'')+(listening&&i===pulse?'pulse':'')}/>)}</div>}
 function PianoKeys({onKey,disabled=false,highlight=-1}:any){return <div className={'keys '+(disabled?'disabled':'')}>{NOTES.map((n,i)=><button key={n} disabled={disabled} className={highlight===i?'hint':''} onPointerDown={()=>onKey(i)} style={{'--key':COLORS[i]}}><span>{n}</span><small>{['A','S','D','F'][i]}</small></button>)}</div>}
 function CarGraphic({accent}:any){
-  return <div className="carArt" style={{'--accent':accent}}>
-    <div className="carGlow"/>
-    <svg className="carSvg" viewBox="0 0 140 120" aria-hidden="true">
-      <ellipse className="carShadow" cx="70" cy="105" rx="48" ry="10"/>
-      <rect className="tire tireL" x="18" y="58" width="16" height="42" rx="7"/>
-      <rect className="tire tireR" x="106" y="58" width="16" height="42" rx="7"/>
-      <path className="bodyMain" d="M28 96 L22 79 Q23 51 42 31 Q54 18 70 18 Q86 18 98 31 Q117 51 118 79 L112 96 Q94 106 70 106 Q46 106 28 96 Z"/>
-      <path className="bodyHighlight" d="M37 51 Q51 27 70 27 Q89 27 103 51 L96 56 Q84 44 70 44 Q56 44 44 56 Z"/>
-      <path className="rearGlass" d="M45 48 Q55 29 70 29 Q85 29 95 48 L89 61 H51 Z"/>
-      <path className="trunk" d="M36 69 Q70 60 104 69 L100 89 Q70 97 40 89 Z"/>
-      <rect className="tailLight left" x="34" y="75" width="23" height="10" rx="4"/>
-      <rect className="tailLight right" x="83" y="75" width="23" height="10" rx="4"/>
-      <rect className="bumper" x="42" y="91" width="56" height="8" rx="4"/>
-      <rect className="plateSvg" x="56" y="85" width="28" height="12" rx="2"/>
-      <text x="70" y="94" textAnchor="middle" className="plateText">KEYS</text>
-      <circle className="exhaust" cx="37" cy="99" r="3"/><circle className="exhaust" cx="103" cy="99" r="3"/>
-    </svg>
-  </div>
+  const car=CARS.find(c=>c.accent===accent)||CARS[0];
+  return <div className="carArt" style={{'--accent':car.accent}}><div className="carGlow"/><img className="carImage" src={car.image} alt="" draggable="false"/></div>
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
