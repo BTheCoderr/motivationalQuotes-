@@ -253,3 +253,114 @@ button:active{transform:translateY(3px)}
 .bridge .deck{transition:transform .7s cubic-bezier(.2,.8,.2,1)}
 .tunnel span{transition:background .28s,box-shadow .28s,transform .28s}
 .tunnel span.lit{transform:rotate(45deg) scale(1.2)}
+
+
+/* v21: preschool clarity pass — one task, one focus */
+.top{display:none!important}
+.app{padding-top:0!important;min-height:100svh}
+.homeScreen,.panelScreen,.storyIntro,.resultsScreen,.pianoScreen{padding-top:10px}
+
+/* Home: hero + one primary action + small mode choices */
+.simpleHome{padding:8px 10px 24px}
+.simpleHome .heroWorld{
+  height:49svh;min-height:390px;max-height:520px;border-width:4px;border-radius:30px;
+  box-shadow:0 8px 0 #5fb4d955,0 16px 30px #2779a62a
+}
+.simpleHome .homeLogo{top:16px;font-size:clamp(48px,13vw,70px)}
+.homeStats{position:absolute;z-index:14;right:12px;top:86px;display:flex;gap:6px}
+.homeStats span{background:#167be4;color:#fff;border:3px solid #fff;border-radius:999px;padding:5px 9px;font-weight:1000;font-size:10px;box-shadow:0 4px 0 #0d58aa}
+.simpleHome .homeSparkles{top:94px}
+.simpleHome .homeCitySign{top:35%;left:12px;font-size:12px;padding:6px 9px;border-width:4px}
+.simpleHome .heroRoad{height:48%;bottom:-3%}
+.simpleHome .heroCar{bottom:3%;transform:translateX(-50%) scale(1.05)}
+.simpleHome .homeCoins{top:57%}
+.simpleMenu{display:flex;flex-direction:column;gap:9px;margin-top:10px}
+.primaryPlay{
+  width:100%;min-height:78px;border:4px solid #fff;border-radius:24px;background:linear-gradient(#ffe94c,#ffba2d);
+  color:#155447;display:grid;grid-template-columns:54px 1fr;align-items:center;text-align:left;padding:10px 16px;
+  box-shadow:0 7px 0 #d88c1f,0 13px 24px #a7681930
+}
+.primaryPlay>span{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#38cd46;color:#fff;border:3px solid #fff;font-size:23px}
+.primaryPlay b{display:block;font-size:25px;line-height:1}.primaryPlay small{display:block;margin-top:3px;font-size:10px;color:#735d21}
+.mainChoices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.choice{height:78px;border:4px solid white;border-radius:22px;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 0 #0002}
+.choice span{font-size:27px}.choice b{font-size:17px}.choice.twin{background:linear-gradient(145deg,#6d9cff,#7652eb)}.choice.story{background:linear-gradient(145deg,#ff718f,#ff9343)}
+.quickChoices{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.quickChoices button{height:62px;border:4px solid #fff;border-radius:20px;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:0 5px 0 #0002}
+.quickChoices button:nth-child(1){background:linear-gradient(#ff6579,#ed3b5e)}.quickChoices button:nth-child(2){background:linear-gradient(#54bdff,#1876e0)}.quickChoices button:nth-child(3){background:linear-gradient(#68df4a,#23b949)}
+.quickChoices span{font-size:21px}.quickChoices b{font-size:11px}
+.simpleHome .modeDock{display:none!important}
+
+/* Gameplay: the world is the screen; instruction floats inside it */
+.gameScreen.cleanPlay,.gameScreen.cleanRace,.cleanPiano{position:relative;padding:8px 8px 14px;gap:7px;width:min(720px,100%);margin:0 auto}
+.playFrame{position:relative}
+.playFrame .worldStage,.playFrame .pianoStage{
+  border:4px solid #fff;border-radius:28px;box-shadow:0 7px 0 #5f8ba955,0 12px 26px #30657d26;
+  height:calc(100svh - 126px);min-height:460px;max-height:720px
+}
+.compactMission{
+  position:absolute;z-index:30;left:50%;top:12px;transform:translateX(-50%);
+  width:min(82%,430px);padding:8px 10px;border:3px solid #ffc832;border-radius:20px;
+  box-shadow:0 5px 0 #d69b27;background:#fffce8ee;backdrop-filter:blur(4px)
+}
+.compactMission h2{margin:0 0 5px;font-size:17px;color:#173a7a}
+.bigPrompt{
+  display:inline-flex;align-items:center;justify-content:center;min-width:145px;padding:6px 14px;border-radius:999px;
+  background:linear-gradient(#ffe858,#ffc530);border:3px solid #fff;color:#173a7a;font-size:18px;font-weight:1000;box-shadow:0 3px 0 #df9c22
+}
+.bigPrompt b{color:#ff4f86;font-size:27px;margin-left:5px}
+.bigPrompt.listen{background:linear-gradient(#ffd759,#ffaf39)}.bigPrompt.copy{background:linear-gradient(#6be84c,#28bb49);color:white}
+.compactMission .progressDots{margin-top:7px;gap:7px}.compactMission .progressDots i{width:17px;height:17px;border-width:2px}
+.cleanPlay .keys,.cleanRace .keys,.cleanPiano .keys{border-width:4px;border-radius:22px;padding:5px;gap:5px;box-shadow:0 6px 0 #0c4c9e}
+.cleanPlay .keys button,.cleanRace .keys button,.cleanPiano .keys button{height:92px;border-width:3px;border-radius:18px}
+.cleanPlay .keys button span,.cleanRace .keys button span,.cleanPiano .keys button span{font-size:42px}
+.cleanPlay .keys button small,.cleanRace .keys button small,.cleanPiano .keys button small{display:none!important}
+.smallHome{
+  position:absolute!important;z-index:40;left:10px!important;top:10px!important;bottom:auto!important;
+  width:45px!important;height:45px!important;border-width:3px!important;font-size:20px!important
+}
+
+/* Race: only progress + next note, no dashboard */
+.raceBar{
+  position:absolute;z-index:30;left:64px;right:12px;top:12px;height:52px;border:3px solid white;border-radius:18px;
+  background:#fffcebee;display:flex;align-items:center;justify-content:space-between;padding:6px 12px;box-shadow:0 4px 0 #d89a26;color:#1e4c8b
+}
+.raceBar span{font-size:12px;font-weight:1000}.raceBar b{font-size:13px}.raceBar em{font-style:normal;font-size:26px;margin-left:5px}
+.cleanRace .raceHud,.cleanRace .raceCue{display:none!important}
+
+/* Piano: free play should be self-explanatory */
+.cleanPiano{min-height:100svh;justify-content:flex-start}
+.freeChip{
+  position:absolute;z-index:25;left:50%;top:14px;transform:translateX(-50%);background:#fffce8e8;border:3px solid #ffd33f;
+  border-radius:999px;padding:7px 13px;color:#245394;font-size:12px;font-weight:1000;box-shadow:0 4px 0 #d49b29
+}
+.cleanPiano .pianoStage{display:grid;place-items:center;background:linear-gradient(#56d2ff 0 57%,#6bdc56 58% 73%,#718aa6 74%)}
+.cleanPiano .pianoCar{transform:scale(1.18)}
+.cleanPiano .soundRings i{border-width:5px;opacity:.55}
+
+/* Garage: one car at a time */
+.simpleGarage{min-height:100svh;padding:10px 10px 24px;background:linear-gradient(#70dcff,#e9fbff 58%,#fff6d4)}
+.garageTop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.garageTop h2{margin:0;font-size:38px;color:#ffad23;text-shadow:0 3px 0 #fff,0 5px 0 #d47c17}
+.garageTop .back{padding:9px 13px;border-width:3px;font-size:11px}
+.garageShowcase{display:grid;grid-template-columns:46px 1fr 46px;align-items:center;gap:7px;margin-top:14px}
+.garageArrow{width:44px;height:64px;border:3px solid #fff;border-radius:18px;background:linear-gradient(#55b8ff,#2877db);color:#fff;font-size:38px;box-shadow:0 5px 0 #1555a5}
+.singleCar{
+  min-height:510px;border:5px solid #fff;border-radius:30px;padding:16px;text-align:center;background:linear-gradient(#ffffffdd,#ecf8ff);
+  box-shadow:0 9px 0 color-mix(in srgb,var(--accent) 38%,#55718c),0 16px 30px #2d688629
+}
+.singleCar.locked{filter:saturate(.55);opacity:.7}
+.singleCarArt{height:330px;display:grid;place-items:center;background:radial-gradient(circle,#fff 0 38%,color-mix(in srgb,var(--accent) 25%,transparent) 39%,transparent 70%);border-radius:24px}
+.singleCarArt .carArt{width:300px;height:300px}
+.singleCar h3{margin:5px 0 2px;font-size:26px;color:color-mix(in srgb,var(--accent) 65%,#1c4e89)}
+.singleCar p{margin:5px 0 12px;font-size:12px;color:#60708a;font-weight:900}
+.equipBtn{border:4px solid #fff;border-radius:999px;padding:11px 18px;background:linear-gradient(#ffe65f,#ffc23b);color:#684e00;font-size:13px;font-weight:1000;box-shadow:0 5px 0 #d28a1d}
+.equipBtn:disabled{opacity:.72}
+.garagePager{display:flex;justify-content:center;gap:8px;margin-top:14px}.garagePager i{width:12px;height:12px;border-radius:50%;background:#aab8c7}.garagePager i.on{background:#308be5;box-shadow:0 0 0 3px #fff}
+.garageProgress{text-align:center;margin-top:10px;font-weight:1000;color:#41669a;font-size:12px}.garageProgress span{margin:0 8px;color:#9fb0c5}
+
+/* World map and story intro: fewer words */
+.panelScreen .mapHeader p{display:none}
+.world small{display:none!important}
+.world{grid-template-columns:62px 1fr auto;min-height:104px}
+.storyText p{max-width:430px}
