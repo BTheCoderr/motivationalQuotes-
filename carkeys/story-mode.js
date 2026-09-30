@@ -47,10 +47,49 @@ function hideAllStoryScreens(){
   if($('worldMapOverlay'))$('worldMapOverlay').style.display='none';
   if($('storyOverlay'))$('storyOverlay').style.display='none';
 }
+function restoreGameChrome(){
+  window.CARKEYS_STORY_UI=null;
+  if($('songSelect'))$('songSelect').style.display='';
+  if($('storyFooter'))$('storyFooter').style.display='none';
+  if($('boostLabel'))$('boostLabel').textContent='BOOST';
+  if($('sourceLabel'))$('sourceLabel').style.display='';
+  try{updateHud()}catch{}
+}
+function syncStoryChrome(){
+  if(!active||!selected)return;
+  const s=selected.scenes[sceneIndex];
+  const short=(selected.mapTitle||'STORY').replace(/\s+/g,' ').toUpperCase();
+  window.CARKEYS_STORY_UI={
+    active:true,
+    chapter:(sceneIndex+1)+'/'+selected.scenes.length,
+    pattern:Math.min(step,s.pattern.length)+'/'+s.pattern.length,
+    worldShort:short.length>10?short.split(' ')[0]:short
+  };
+  if($('songSelect'))$('songSelect').style.display='none';
+  if($('storyFooter')){
+    $('storyFooter').style.display='flex';
+    $('storyFooterWorld').textContent=selected.mapTitle.toUpperCase();
+    $('storyFooterChapter').textContent='CHAPTER '+(sceneIndex+1)+' · '+s.name.toUpperCase();
+  }
+  if($('boostLabel'))$('boostLabel').textContent='MUSIC';
+  if($('sourceLabel'))$('sourceLabel').style.display='none';
+  try{updateHud()}catch{}
+}
+function setStoryRoadPattern(){
+  if(!active||!selected)return;
+  const s=selected.scenes[sceneIndex];
+  let elapsed=0;
+  try{elapsed=Math.max(0,performance.now()-startTime)}catch{}
+  const base=elapsed+1050;
+  try{
+    notes=s.pattern.map((lane,i)=>({time:base+i*640,lane,hit:i<step,missed:false,id:'story-'+sceneIndex+'-'+i}));
+  }catch{}
+}
 function cleanupStory(){
   runToken++;active=false;locked=false;mistakes=0;clearGlow();stopSpeech();
   if(box)box.style.display='none';
-  try{freePlay=false}catch{}
+  try{notes=[];freePlay=false}catch{}
+  restoreGameChrome();
   if(previousAgain&&$('againBtn'))$('againBtn').onclick=previousAgain;
   if($('againBtn'))$('againBtn').textContent='RACE AGAIN';
 }
@@ -115,17 +154,19 @@ function storySceneMissionCopy(scene){
 function renderMission(){
   ensureBox();
   const s=selected.scenes[sceneIndex];
+  const memoryMode=!!s.listenFirst;
   box.style.display='block';
   box.innerHTML='<div class="storyMissionTop"><span>'+s.icon+' CHAPTER '+(sceneIndex+1)+'/'+selected.scenes.length+'</span><b>'+s.name.toUpperCase()+'</b></div>'+
     '<div class="storyMissionText">'+s.prompt+'</div>'+
-    '<div class="storyDots">'+s.pattern.map((n,i)=>'<span class="'+(i<step?'done':i===step?'now':'')+'">'+labels[n]+'</span>').join('')+'</div>';
-  clearGlow();
-  if(!locked&&(s.guide||mistakes>=2)&&!s.listenFirst)glow(s.pattern[step],true);
+    '<div class="storyDots">'+s.pattern.map((n,i)=>'<span class="'+(i<step?'done':i===step?'now':'')+'">'+(memoryMode?'•':labels[n])+'</span>').join('')+'</div>';
+  clearGlow();syncStoryChrome();
+  if(!locked&&(s.guide||mistakes>=2)&&!s.listenFirst&&step<s.pattern.length)glow(s.pattern[step],true);
 }
 function demoPattern(){
   if(!active||!selected)return;
   const token=runToken,s=selected.scenes[sceneIndex];
   locked=true;clearGlow();
+  try{notes=[]}catch{}
   const text=box?.querySelector('.storyMissionText');
   if(text)text.textContent=s.listenFirst?'Listen… remember the sound.':'Watch and listen. The road is giving you a clue.';
   s.pattern.forEach((n,i)=>tone(n,i*500));
@@ -133,21 +174,24 @@ function demoPattern(){
     if(!active||token!==runToken)return;
     locked=false;step=0;
     if(text)text.textContent=s.listenFirst?'Your turn. Play the echo back!':s.prompt;
-    renderMission();
+    renderMission();setStoryRoadPattern();
     if(s.listenFirst)clearGlow();
   },s.pattern.length*500+450);
 }
 function beginScene(){
   if(!active||!selected)return;
-  step=0;locked=false;mistakes=0;renderMission();
+  step=0;locked=false;mistakes=0;
   const s=selected.scenes[sceneIndex];
+  renderMission();
+  if(s.listenFirst){try{notes=[]}catch{}}
+  else setStoryRoadPattern();
   musicalLine(s.prompt,s.pattern);
   if(s.listenFirst)setTimeout(demoPattern,900);
 }
 function celebrate(){
   if(!active||!selected)return;
   const token=runToken,s=selected.scenes[sceneIndex];
-  locked=true;clearGlow();
+  locked=true;clearGlow();step=s.pattern.length;syncStoryChrome();try{notes=[]}catch{}
   try{showFlash(sceneIndex===selected.scenes.length-1?'STORY CLEAR!':'MISSION CLEAR!','#ffd166',true)}catch{}
   speak(s.success,.92,1.18);
   const text=box?.querySelector('.storyMissionText');if(text)text.textContent=s.success;
@@ -191,7 +235,9 @@ function storyHit(lane){
   const s=selected.scenes[sceneIndex],want=s.pattern[step];
   try{noteSound(lane,lane===want?'perfect':'miss')}catch{}
   if(lane===want){
-    glow(want,false);step++;
+    glow(want,false);
+    try{if(notes&&notes[step])notes[step].hit=true}catch{}
+    step++;
     try{
       targetLane=lane;speed=Math.min(132,speed+8);score+=600;boost=Math.min(100,boost+8);
       updateHud();buzz(18);
@@ -200,7 +246,7 @@ function storyHit(lane){
   }else{
     mistakes++;
     try{showFlash(mistakes>=2?'HERE’S A CLUE':'LISTEN AGAIN','#67e8ff',false);buzz(25)}catch{}
-    step=0;renderMission();
+    step=0;renderMission();setStoryRoadPattern();
     if(s.listenFirst||mistakes>=2)setTimeout(demoPattern,450);
   }
   return true;
@@ -212,8 +258,11 @@ function startSelectedStory(){
   active=true;sceneIndex=0;step=0;locked=false;mistakes=0;
   $('pauseBtn').style.visibility='visible';
   try{
-    tutorialMode=false;bossMode=false;freePlay=true;prepare();running=true;
-    startTime=performance.now();lastT=startTime;startAudio();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);
+    tutorialMode=false;bossMode=false;freePlay=true;prepare();notes=[];running=true;
+    startTime=performance.now();lastT=startTime;
+    window.CARKEYS_STORY_UI={active:true,chapter:'1/'+selected.scenes.length,pattern:'0/'+selected.scenes[0].pattern.length,worldShort:selected.mapTitle.toUpperCase().split(' ')[0]};
+    syncStoryChrome();
+    startAudio();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);
     modeBadge.textContent='STORY MODE · '+selected.mapTitle.toUpperCase();
     modeBadge.classList.add('raceTypePill');
   }catch{}
