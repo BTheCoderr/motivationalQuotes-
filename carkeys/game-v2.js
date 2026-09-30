@@ -494,9 +494,9 @@ $('startBtn').onclick=startGame;$('freePlayBtn').onclick=startFreePlay;$('againB
 $('pauseBtn').onclick=pauseGame;$('resumeBtn').onclick=resumeGame;$('quitPracticeBtn').onclick=quitPractice;$('homeFromPause').onclick=goHome;$('homeFromEnd').onclick=goHome;
 $('raceMenuBtn').onclick=openRaceSetup;$('tutorialBtn').onclick=startTutorial;$('practiceMenuBtn').onclick=startFreePlay;$('bossBtn').onclick=startBossRace;
 $('garageMenuBtn').onclick=()=>{renderGarage();garageModal.classList.add('show')};
-$('garageBtn').onclick=()=>{renderGarage();garageModal.classList.add('show')};
+$('garageBtn').onclick=()=>{if(running){toast('Pause or finish the mission before visiting the Garage 🚗');return}renderGarage();garageModal.classList.add('show')};
 $('closeGarage').onclick=()=>garageModal.classList.remove('show');
-$('garageFromEnd').onclick=()=>{endOverlay.style.display='none';renderGarage();garageModal.classList.add('show')};
+$('garageFromEnd').onclick=()=>{renderGarage();garageModal.classList.add('show')};
 garageModal.addEventListener('click',e=>{if(e.target===garageModal)garageModal.classList.remove('show')});
 songSelect.addEventListener('change',()=>chooseSong(+songSelect.value));
 document.querySelectorAll('.modeChoice').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
