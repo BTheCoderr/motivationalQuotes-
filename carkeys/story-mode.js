@@ -26,8 +26,18 @@ function tone(lane,delay=0){
   setTimeout(()=>{try{noteSound(lane,'perfect')}catch{}},delay);
 }
 function musicalLine(text,pattern=[0,1,2,3]){
-  pattern.slice(0,4).forEach((lane,i)=>tone(lane,i*360));
-  setTimeout(()=>speak(text,.9,1.15),120);
+  pattern.slice(0,4).forEach((lane,i)=>tone(lane,i*330));
+}
+function storyJingle(kind='good'){
+  const seq=kind==='finish'?[0,1,2,3,2,3]:kind==='good'?[0,2,3]:[0,1];
+  seq.forEach((lane,i)=>tone(lane,i*135));
+  try{
+    if(typeof drum==='function'){
+      setTimeout(()=>drum('kick'),0);
+      setTimeout(()=>drum('hat'),135);
+      setTimeout(()=>drum(kind==='finish'?'snare':'hat'),270);
+    }
+  }catch{}
 }
 function ensureBox(){
   if(box)return;
@@ -244,10 +254,8 @@ function beginScene(){
   renderMission();
   if(s.listenFirst){try{notes=[]}catch{}}
   else setStoryRoadPattern();
-  if(twinMode){
-    speak(s.listenFirst?'Listen first. Then copy the sounds.':s.name+'. Tap '+labels[s.pattern[0]]+'.',.92,1.12);
-  }else if(!s.listenFirst){
-    musicalLine(s.prompt,s.pattern);
+  if(!s.listenFirst){
+    musicalLine('',s.pattern);
   }
   if(s.listenFirst)setTimeout(demoPattern,twinMode?450:650);
 }
@@ -258,7 +266,7 @@ function celebrate(){
   if(window.CARKEYS_WORLD_STATE)window.CARKEYS_WORLD_STATE.pulseIndex=-1;
   try{notes=[]}catch{}
   try{showFlash(sceneIndex===selected.scenes.length-1?'STORY CLEAR!':'MISSION CLEAR!','#ffd166',true)}catch{}
-  speak(s.success,.92,1.18);
+  storyJingle(sceneIndex===selected.scenes.length-1?'finish':'good');
   const text=box?.querySelector('.storyMissionText');if(text)text.textContent=s.success;
   box?.querySelectorAll('.storyDots span').forEach(x=>x.className='done');
   setTimeout(()=>{
@@ -276,7 +284,7 @@ function finishStory(){
     try{coins+=(selected.reward?.coins||100);saveMeta()}catch{}
   }
   try{showFlash(twinMode?'YOU DID IT!':'ADVENTURE COMPLETE!','#7df0a3',true)}catch{}
-  speak(twinMode?'You did it! You brought the music back!':selected.finishText,.9,1.14);
+  storyJingle('finish');
   const reward=first?'🎁 <strong>'+selected.reward.label+' + '+selected.reward.coins+' coins!</strong>':'✨ <strong>Story complete!</strong>';
   setTimeout(()=>{
     $('finalScore').textContent='STORY';
@@ -345,14 +353,9 @@ function startSelectedStory(){
     modeBadge.textContent='STORY MODE · '+selected.mapTitle.toUpperCase();
     modeBadge.classList.add('raceTypePill');
   }catch{}
-  const refrain=selected.id==='city-music'?'Keys in the night, wheels on the road. Find every sound and bring music home.':'Step with the forest, beat by beat. Help every animal find their feet.';
-  if(twinMode){
-    speak('Let’s go! Help the city find its music.',.94,1.15);
-    setTimeout(()=>{if(active&&token===runToken)beginScene()},650);
-  }else{
-    musicalLine(refrain,[0,1,2,3]);
-    setTimeout(()=>{if(active&&token===runToken)beginScene()},1150);
-  }
+  musicalLine('',[0,1,2,3]);
+  try{if(typeof drum==='function'){drum('kick');setTimeout(()=>drum('hat'),330);setTimeout(()=>drum('snare'),660)}}catch{}
+  setTimeout(()=>{if(active&&token===runToken)beginScene()},twinMode?760:1050);
 }
 function startTwinMode(){
   if(!STORIES.length)return;
