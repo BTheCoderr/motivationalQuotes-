@@ -209,150 +209,222 @@ function App(){
 
   return <main className={'app '+screen}>
     <TopBar coins={coins} stars={progress.stars} backend={backend} onHome={goHome} compact={screen!=='home'} />
-    {screen==='home'&&<Home progress={progress} hasContinue={hasContinue} continueWorld={continueWorld} continueScene={continueScene} onContinue={continueAdventure} onTwin={()=>startStory('twin',0,0)} onStory={()=>setScreen('map')} onRace={startRace} onPiano={()=>{setScreen('piano');startBeat('piano')}} onGarage={()=>setScreen('garage')} />}
-    {screen==='map'&&<WorldMap progress={progress} onWorld={openWorldStory} onBack={goHome} />}
-    {screen==='story'&&<StoryIntro world={world} completed={progress.completedWorlds.includes(world.id)} onStart={()=>startStory('story',worldIndex,0)} onBack={()=>setScreen('map')} />}
-    {screen==='play'&&<PlayScreen mode={playMode} world={world} scene={scene} sceneIndex={sceneIndex} step={step} phase={memoryPhase} pulse={pulse} message={message} car={car} onKey={hitStory} onHome={goHome} />}
-    {screen==='race'&&<RaceScreen pattern={racePattern} step={raceStep} score={raceScore} combo={raceCombo} car={car} onKey={hitRace} onHome={goHome} />}
-    {screen==='piano'&&<PianoScreen onKey={pianoHit} onHome={goHome} />}
+    {screen==='home'&&<Home coins={coins} progress={progress} hasContinue={hasContinue} continueWorld={continueWorld} continueScene={continueScene} onContinue={continueAdventure} onTwin={()=>startStory('twin',0,0)} onStory={()=>setScreen('map')} onRace={startRace} onPiano={()=>{setScreen('piano');startBeat('piano')}} onGarage={()=>setScreen('garage')} />}
+    {screen==='map'&&<WorldMap progress={progress} onWorld={openWorldStory} onBack={goHome} onGarage={()=>setScreen('garage')} />}
+    {screen==='story'&&<StoryIntro world={world} completed={progress.completedWorlds.includes(world.id)} onStart={()=>startStory('story',worldIndex,0)} onBack={()=>setScreen('map')} onGarage={()=>setScreen('garage')} />}
+    {screen==='play'&&<PlayScreen mode={playMode} world={world} scene={scene} sceneIndex={sceneIndex} step={step} phase={memoryPhase} pulse={pulse} message={message} car={car} onKey={hitStory} onHome={goHome} onGarage={()=>setScreen('garage')} />}
+    {screen==='race'&&<RaceScreen pattern={racePattern} step={raceStep} score={raceScore} combo={raceCombo} car={car} onKey={hitRace} onHome={goHome} onGarage={()=>setScreen('garage')} />}
+    {screen==='piano'&&<PianoScreen onKey={pianoHit} onHome={goHome} onGarage={()=>setScreen('garage')} />}
     {screen==='garage'&&<Garage selected={selectedCar} stars={progress.stars} races={progress.races} onSelect={setSelectedCar} onBack={goHome} />}
     {screen==='results'&&<Results kind={resultKind} world={WORLDS[resultWorld]} nextWorld={resultNextWorld===null?null:WORLDS[resultNextWorld]} mode={playMode} onContinue={continueAfterResult} onAgain={()=>resultKind==='race'?startRace():startStory(playMode,resultWorld,0)} onHome={goHome} />}
   </main>
 }
 
-function TopBar({coins,stars,backend,onHome,compact}:any){
-  return <header className={'top '+(compact?'compact':'')}><button className="brand" onClick={onHome} aria-label="CarKeys home"><span className="logoNote">♪</span><span className="brandWord">CarKeys</span></button><div className="topMeta"><span className={'cloud '+backend}>● {backend==='online'?'READY':backend==='checking'?'CONNECTING':'OFFLINE'}</span><span className="starsMeta">⭐ {stars}</span><span className="coins">🪙 {coins}</span></div></header>
+
+function KidLogo({small=false}:any){
+  return <div className={'kidLogo '+(small?'small':'')} aria-label="CarKeys">
+    <i>♪</i><span className="l1">C</span><span className="l2">a</span><span className="l3">r</span><span className="l4">K</span><span className="l5">e</span><span className="l6">y</span><span className="l7">s</span><b>♪</b>
+    <em><u/><u/><u/></em>
+  </div>
 }
-function Home({progress,hasContinue,continueWorld,continueScene,onContinue,onTwin,onStory,onRace,onPiano,onGarage}:any){
-  return <section className="homeScreen simpleHome">
-    <div className="heroWorld">
-      <div className="homeLogo" aria-label="CarKeys"><span>C</span><span>a</span><span>r</span><span>K</span><span>e</span><span>y</span><span>s</span><b>♪</b></div>
-      <div className="homeStats"><span>⭐ {progress.stars}</span><span>🪙 {Number(localStorage.getItem('carkeys2-coins')||'0')}</span></div>
-      <div className="homeSparkles"><i>♪</i><i>★</i><i>♫</i></div>
-      <div className="homeCitySign">CITY OF<br/><b>MUSIC</b></div>
-      <div className="skyline"/>
-      <div className="heroRoad"><div className="roadMotion"/></div>
-      <div className="homeCoins"><i>★</i><i>★</i></div>
-      <div className="heroCar"><CarGraphic accent="#23a8ff"/></div>
+
+function TopBar({coins,stars,backend,onHome,compact}:any){
+  return <header className={'top '+(compact?'compact':'')}>
+    <button className="brand" onClick={onHome} aria-label="CarKeys home"><KidLogo small/></button>
+    <div className="topMeta"><span className={'cloud '+backend}>● {backend==='online'?'READY':backend==='checking'?'CONNECTING':'OFFLINE'}</span><span className="starsMeta">⭐ {stars}</span><span className="coins">🪙 {coins}</span></div>
+  </header>
+}
+
+function Home({coins,progress,hasContinue,continueWorld,continueScene,onContinue,onTwin,onStory,onRace,onPiano,onGarage}:any){
+  return <section className="ckHome">
+    <div className="ckSky">
+      <div className="statPill star">⭐ <b>{progress.stars}</b></div>
+      <div className="statPill coin">🪙 <b>{coins}</b></div>
+      <button className="gearBtn" aria-label="Settings">⚙</button>
+      <KidLogo/>
+      <span className="floatNote n1">♪</span><span className="floatNote n2">♫</span><span className="floatNote n3">♪</span>
+      <div className="cityMusicSign">CITY<br/><small>of</small><br/>MUSIC</div>
+      <div className="cityWorld">
+        <div className="cityBlocks"><i/><i/><i/><i/><i/><i/><i/></div>
+        <div className="musicArch">♪</div>
+        <div className="homeTrack"><span/><span/><span/></div>
+        <div className="homeCar"><CarGraphic accent="#23a8ff"/></div>
+        <div className="collectibles"><i>🪙</i><i>🪙</i><i>★</i></div>
+      </div>
     </div>
 
-    <div className="simpleMenu">
-      {hasContinue
-        ? <button className="primaryPlay" onClick={onContinue}><span>▶</span><div><b>CONTINUE</b><small>{continueWorld.title} · {continueScene.title}</small></div></button>
-        : <button className="primaryPlay" onClick={onTwin}><span>▶</span><div><b>PLAY</b><small>Start with Twin Mode</small></div></button>}
-      <div className="mainChoices">
-        <button className="choice twin" onClick={onTwin}><span>⭐</span><b>TWIN MODE</b></button>
-        <button className="choice story" onClick={onStory}><span>📖</span><b>STORY</b></button>
+    <div className="ckHomeMenu">
+      <button className="megaPlay" onClick={hasContinue?onContinue:onTwin}>
+        <span className="playDisc">▶</span>
+        <strong>{hasContinue?'CONTINUE ADVENTURE':'PLAY'}</strong>
+        {hasContinue&&<small>{continueWorld.title} · {continueScene.title}</small>}
+      </button>
+
+      <div className="modeGrid topModes">
+        <button className="modeTile twin" onClick={onTwin}><span>🚙🚗</span><b>TWIN MODE</b></button>
+        <button className="modeTile story" onClick={onStory}><span>📖</span><b>STORY MODE</b></button>
       </div>
-      <div className="quickChoices">
-        <button onClick={onRace}><span>🏁</span><b>RACE</b></button>
-        <button onClick={onPiano}><span>🎹</span><b>PIANO</b></button>
-        <button onClick={onGarage}><span>🚗</span><b>GARAGE</b></button>
+      <div className="modeGrid bottomModes">
+        <button className="modeTile race" onClick={onRace}><span>🏁</span><b>RACE</b></button>
+        <button className="modeTile piano" onClick={onPiano}><span>🎹</span><b>PIANO PLAY</b></button>
+        <button className="modeTile garageTile" onClick={onGarage}><span>🏠</span><b>GARAGE</b></button>
       </div>
     </div>
   </section>
 }
 
-function WorldMap({progress,onWorld,onBack}:any){
+function WorldMap({progress,onWorld,onBack,onGarage}:any){
   const cityDone=progress.completedWorlds.includes('city'),forestDone=progress.completedWorlds.includes('forest');
-  return <section className="panelScreen"><button className="back" onClick={onBack}>← HOME</button><div className="mapHeader"><span>STORY ROAD</span><h2>KEEP THE ADVENTURE GOING.</h2><p>{progress.stars} ★ earned · progress saves automatically</p></div><div className="worldPath">
-    <button className={'world active '+(cityDone?'complete':'')} onClick={()=>onWorld(0)}><span>🌃</span><b>CITY OF MUSIC</b><small>{cityDone?'Story complete — replay anytime.':'The city lost its sound.'}</small><i>{cityDone?'✓ COMPLETE':'PLAY STORY →'}</i></button>
-    <div className="pathDots">••••••</div>
-    <button className={'world '+(cityDone?'active ':'locked ')+(forestDone?'complete':'')} onClick={()=>cityDone&&onWorld(1)}><span>🌲</span><b>RHYTHM FOREST</b><small>{!cityDone?'Finish City of Music first.':forestDone?'Story complete — replay anytime.':'The Moonlight Parade lost its beat.'}</small><i>{!cityDone?'LOCKED':forestDone?'✓ COMPLETE':'PLAY STORY →'}</i></button>
-    <div className="pathDots">••••••</div><button className="world locked"><span>⛰️</span><b>NUMBER MOUNTAIN</b><small>Next adventure is being built.</small><i>COMING SOON</i></button>
-  </div></section>
+  return <section className="ckMap">
+    <div className="mapHead"><button className="roundBack" onClick={onBack}>←</button><KidLogo small/><button className="purpleGarage" onClick={onGarage}>🏠<small>Garage</small></button></div>
+    <div className="mapRoad">
+      <div className="mapIsland cityIsland">
+        <div className="mapCity"><div className="tinyCar"><CarGraphic accent="#23a8ff"/></div><span className="mapArch">♪</span></div>
+        <button className="worldCard cityCard" onClick={()=>onWorld(0)}>
+          <b>CITY OF <em>MUSIC</em></b>
+          <span className="worldStars">{cityDone?'⭐⭐⭐':'⭐⭐☆'}</span>
+          <i>{cityDone?'REPLAY':'PLAY'} ▶</i>
+        </button>
+      </div>
+      <div className="mapConnector"><i/><i/></div>
+      <div className="mapIsland forestIsland">
+        <div className="forestArt"><span>🌳</span><b>🦌</b><b>🦉</b><i>♪</i></div>
+        <button className={'worldCard forestCard '+(cityDone?'open':'locked')} onClick={()=>cityDone&&onWorld(1)}>
+          <b>RHYTHM <em>FOREST</em></b>
+          <span className="worldStars">{forestDone?'⭐⭐⭐':'☆☆☆'}</span>
+          <i>{cityDone?(forestDone?'REPLAY':'PLAY ▶'):'🔒'}</i>
+        </button>
+      </div>
+      <div className="mapConnector snow"><i/><i/></div>
+      <div className="mapIsland mountainIsland">
+        <div className="mountainArt">⛰️</div>
+        <div className="worldCard mountainCard locked"><b>NUMBER <em>MOUNTAIN</em></b><span className="worldStars">☆☆☆</span><i>🔒 COMING SOON</i></div>
+      </div>
+    </div>
+  </section>
 }
-function StoryIntro({world,completed,onStart,onBack}:any){
-  return <section className={'storyIntro theme-'+world.theme}><button className="back" onClick={onBack}>← MAP</button><div className="storyPoster"><div className="storySky"><span className="bigCity">{world.icon}</span><span className="floatingNote n1">♪</span><span className="floatingNote n2">♫</span></div><div className="storyText"><span>STORY {String(world.number).padStart(2,'0')} {completed?'· COMPLETE':''}</span><h2>{world.storyTitle.toUpperCase()}</h2><p>{world.intro}</p><div className="chapterStrip">{world.scenes.map((s:any,i:number)=><span key={s.id}>{s.icon}<small>{i+1}</small></span>)}</div><button className="cta" onClick={onStart}>{completed?'REPLAY THE STORY':'START THE ADVENTURE'} →</button></div></div></section>
+
+function StoryIntro({world,completed,onStart,onBack,onGarage}:any){
+  return <section className={'ckStoryIntro theme-'+world.theme}>
+    <div className="mapHead"><button className="roundBack" onClick={onBack}>←</button><KidLogo small/><button className="purpleGarage" onClick={onGarage}>🏠<small>Garage</small></button></div>
+    <div className="storyHero">
+      <div className="storyWorldIcon">{world.icon}</div>
+      <span>STORY {String(world.number).padStart(2,'0')}</span>
+      <h2>{world.title.toUpperCase()}</h2>
+      <h3>{world.storyTitle}</h3>
+      <div className="chapterRoad">{world.scenes.map((s:any,i:number)=><i key={s.id}><b>{s.icon}</b><small>{i+1}</small></i>)}</div>
+      <button className="megaPlay storyPlay" onClick={onStart}><span className="playDisc">▶</span><strong>{completed?'PLAY AGAIN':'START STORY'}</strong></button>
+    </div>
+  </section>
 }
-function PlayScreen({mode,world,scene,sceneIndex,step,phase,pulse,message,car,onKey,onHome}:any){
+
+function PlayScreen({mode,world,scene,sceneIndex,step,phase,pulse,message,car,onKey,onHome,onGarage}:any){
   const memory=scene.memory;
   const next=NOTES[scene.pattern[Math.min(step,scene.pattern.length-1)]];
-  return <section className={'gameScreen cleanPlay theme-'+world.theme}>
-    <div className="playFrame">
-      <button className="smallHome" onClick={onHome}>⌂</button>
-      <div className="mission compactMission">
-        <h2>{scene.title}</h2>
+  return <section className={'ckPlay theme-'+world.theme}>
+    <div className="gameHead"><KidLogo small/><button className="purpleGarage" onClick={onGarage}>🏠<small>Garage</small></button></div>
+    <div className="missionBoard">
+      <div className="missionPic">{scene.icon}</div>
+      <div className="missionWords">
+        <h2>{scene.title.toUpperCase()}</h2>
         {memory
-          ? <div className={'bigPrompt '+phase}>{phase==='listen'?'👂 LISTEN':'🎹 COPY IT!'}</div>
-          : <div className="bigPrompt">{message||<>TAP <b>{next}</b></>}</div>}
+          ? <div className={'tapPrompt '+phase}>{phase==='listen'?'👂 LISTEN':'🎹 COPY IT!'}</div>
+          : <div className="tapPrompt">{message||<>TAP <b>{next}</b></>}</div>}
         <ProgressDots total={scene.pattern.length} step={step} pulse={pulse} listening={memory&&phase==='listen'} />
       </div>
+    </div>
+    <div className="gameWorldWrap">
+      <button className="pauseOrb" onClick={onHome}>Ⅱ</button>
+      <div className="worldSign">{world.title}</div>
       <WorldStage key={world.id+'-'+scene.id} world={world} scene={scene} step={step} pulse={pulse} phase={phase} car={car}/>
     </div>
     <PianoKeys onKey={onKey} disabled={memory&&phase==='listen'} highlight={!memory?scene.pattern[Math.min(step,scene.pattern.length-1)]:-1}/>
   </section>
 }
 
+
+
 function WorldStage({world,scene,step,pulse,phase,car}:any){
   const forest=world.theme==='forest';
-  return <div className={'worldStage moving scene-'+scene.id+' step-'+step+' '+(forest?'forestStage':'cityStage')}><div className="worldSky"><div className="stars"/><div className={forest?'forestBack':'cityBack'}/></div><div className="road3d"><div className="roadFlow"/><span className="roadLine a"/><span className="roadLine b"/><span className="roadLine c"/></div><div className="motionCoins"><i>★</i><i>★</i><i>★</i></div>
-    {scene.id==='lights'&&<div className="streetlights">{[0,1,2,3].map(i=><span key={i} className={i<step?'on':''}><i/></span>)}</div>}
-    {scene.id==='bridge'&&<div className={'bridge '+(step>=2?'leftOpen ':'')+(step>=4?'rightOpen':'')}><span className="tower left"/><span className="deck left"/><span className="deck right"/><span className="tower right"/></div>}
+  return <div className={'worldStage ckWorld moving scene-'+scene.id+' step-'+step+' '+(forest?'forestStage':'cityStage')}>
+    <div className="worldSky"><div className={forest?'forestBack':'cityBack'}/></div>
+    <div className="musicDecor"><i>♪</i><i>♫</i><i>♪</i></div>
+    <div className="road3d"><div className="roadFlow"/><span className="edge left"/><span className="edge right"/></div>
+    <div className="motionCoins"><i>🪙</i><i>🪙</i><i>🪙</i></div>
+
+    {scene.id==='lights'&&<div className="streetlights">{[0,1,2,3].map(i=><span key={i} className={i<step?'on':''}><i/><b style={{background:COLORS[i]}}>{NOTES[i]}</b></span>)}</div>}
+    {scene.id==='bridge'&&<div className={'bridge '+(step>=2?'leftOpen ':'')+(step>=4?'rightOpen':'')}><span className="tower left"/><span className="deck left"/><span className="water">⛵　⛵</span><span className="deck right"/><span className="tower right"/></div>}
     {scene.id==='tunnel'&&<div className="tunnel">{[0,1,2,3].map(i=><span key={i} className={(phase==='listen'?i===pulse:i<step)?'lit':''} style={{'--c':COLORS[i]}} />)}</div>}
-    {scene.id==='home'&&<div className="restoreCity"><span className={step>=1?'on':''}>MUSIC</span><div className={'windows '+(step>=2?'on':'')}>▦ ▦ ▦</div><div className={'speaker '+(step>=3?'on':'')}>◉</div><div className={'musicBurst '+(step>=4?'on':'')}>♪ ♫ ♪</div></div>}
+    {scene.id==='home'&&<div className="restoreCity"><span className={step>=1?'on':''}>♪</span><div className={'windows '+(step>=2?'on':'')}>▦ ▦ ▦</div><div className={'speaker '+(step>=3?'on':'')}>◉</div><div className={'musicBurst '+(step>=4?'on':'')}>♪ ♫ ★</div></div>}
+
     {forest&&<div className="forestScene">
       {scene.id==='rabbit'&&<><span className="animal big">🐇</span><div className="beatTrail">{scene.pattern.map((_:any,i:number)=><i key={i} className={i<step?'on':''}/>)}</div></>}
-      {scene.id==='woodpecker'&&<><span className="animal bird">🐦</span><div className="workSign">{[0,1,2,3].map(i=><i key={i} className={i<step?'on':''}>×</i>)}</div></>}
+      {scene.id==='woodpecker'&&<><span className="animal bird">🐦</span><div className="workSign">{[0,1,2,3].map(i=><i key={i} className={i<step?'on':''}>★</i>)}</div></>}
       {scene.id==='owl'&&<><span className="animal owl">🦉</span><div className="fireflies">{scene.pattern.map((_:any,i:number)=><i key={i} className={(phase==='listen'?i===pulse:i<step)?'on':''} style={{'--c':COLORS[i]}}/>)}</div></>}
       {scene.id==='parade'&&<div className="parade">{['🐇','🐦','🦉','🦊','🦌','🐿️'].map((a,i)=><span key={i} className={i<step?'on':''}>{a}</span>)}</div>}
     </div>}
     <div className="playerCar" key={scene.id+'-'+step}><CarGraphic accent={car.accent}/></div>
   </div>
 }
-function RaceScreen({pattern,step,score,combo,car,onKey,onHome}:any){
+
+
+
+function RaceScreen({pattern,step,score,combo,car,onKey,onHome,onGarage}:any){
   const want=pattern[step%pattern.length];
-  return <section className="gameScreen raceMode cleanRace">
-    <div className="playFrame">
-      <button className="smallHome" onClick={onHome}>⌂</button>
-      <div className="raceBar"><span>🏁 {Math.min(step+1,pattern.length)}/{pattern.length}</span><b>NEXT <em style={{color:COLORS[want]}}>{NOTES[want]}</em></b></div>
-      <div className="worldStage moving scene-race"><div className="worldSky"><div className="stars"/><div className="cityBack"/></div><div className="road3d"><div className="roadFlow fast"/></div><div className="motionCoins fast"><i>★</i><i>★</i><i>★</i></div><div className="playerCar raceCar" key={'race-'+step}><CarGraphic accent={car.accent}/></div></div>
+  return <section className="ckPlay raceMode">
+    <div className="gameHead"><KidLogo small/><button className="purpleGarage" onClick={onGarage}>🏠<small>Garage</small></button></div>
+    <div className="raceMission"><span>🏁 {Math.min(step+1,pattern.length)}/{pattern.length}</span><b>NEXT <em style={{color:COLORS[want]}}>{NOTES[want]}</em></b><small>⭐ {score}</small></div>
+    <div className="gameWorldWrap"><button className="pauseOrb" onClick={onHome}>Ⅱ</button><div className="worldSign">City of Music</div>
+      <div className="worldStage ckWorld moving scene-race"><div className="worldSky"><div className="cityBack"/></div><div className="musicDecor"><i>♪</i><i>♫</i><i>★</i></div><div className="road3d"><div className="roadFlow fast"/></div><div className="motionCoins fast"><i>🪙</i><i>🪙</i><i>🪙</i></div><div className="playerCar raceCar" key={'race-'+step}><CarGraphic accent={car.accent}/></div></div>
     </div>
     <PianoKeys onKey={onKey} highlight={want}/>
   </section>
 }
 
-function PianoScreen({onKey,onHome}:any){
-  return <section className="pianoScreen cleanPiano">
-    <div className="playFrame">
-      <button className="smallHome" onClick={onHome}>⌂</button>
-      <div className="freeChip">🎹 FREE PLAY</div>
-      <div className="pianoStage"><div className="soundRings"><i/><i/><i/></div><div className="pianoCar"><CarGraphic accent="#23a8ff"/></div></div>
+function PianoScreen({onKey,onHome,onGarage}:any){
+  return <section className="ckPlay pianoMode">
+    <div className="gameHead"><KidLogo small/><button className="purpleGarage" onClick={onGarage}>🏠<small>Garage</small></button></div>
+    <div className="raceMission freeMission"><b>🎹 FREE PLAY</b><small>MAKE THE ROAD SING</small></div>
+    <div className="gameWorldWrap"><button className="pauseOrb" onClick={onHome}>⌂</button><div className="worldSign">City of Music</div>
+      <div className="pianoStage ckWorld"><div className="worldSky"><div className="cityBack"/></div><div className="soundRings"><i/><i/><i/></div><div className="pianoCar"><CarGraphic accent="#23a8ff"/></div></div>
     </div>
     <PianoKeys onKey={onKey}/>
   </section>
 }
 
 function Garage({selected,stars,races,onSelect,onBack}:any){
-  const initial=Math.max(0,CARS.findIndex(c=>c.id===selected));
-  const [view,setView]=useState(initial);
-  const car=CARS[view];
-  const unlocked=view===0||(view===1&&races>=1)||(view===2&&stars>=6)||(view===3&&stars>=10);
-  const status=unlocked?(selected===car.id?'EQUIPPED':'READY'):car.unlock;
-  const move=(dir:number)=>setView((view+dir+CARS.length)%CARS.length);
-  return <section className="panelScreen garage simpleGarage">
-    <div className="garageTop"><button className="back bubbleBack" onClick={onBack}>← DONE</button><h2>GARAGE</h2></div>
-    <div className="garageShowcase">
-      <button className="garageArrow" onClick={()=>move(-1)}>‹</button>
-      <div key={car.id} className={'singleCar '+(!unlocked?'locked':'')} style={{'--accent':car.accent}}>
-        <div className="singleCarArt"><CarGraphic accent={car.accent}/></div>
-        <h3>{car.name}</h3>
-        <p>{unlocked?'Pick your ride':'🔒 '+status}</p>
-        <button className="equipBtn" disabled={!unlocked||selected===car.id} onClick={()=>unlocked&&onSelect(car.id)}>
-          {selected===car.id?'✓ EQUIPPED':unlocked?'DRIVE THIS CAR':'LOCKED'}
+  const unlocked=(i:number)=>i===0||(i===1&&races>=1)||(i===2&&stars>=6)||(i===3&&stars>=10);
+  return <section className="ckGarage">
+    <div className="garageHeader"><div className="garageTitle">★ GARAGE ♪</div><button className="garageDone" onClick={onBack}>← DONE</button></div>
+    <div className="garageCards">
+      {CARS.map((car,i)=>{
+        const open=unlocked(i),equipped=selected===car.id;
+        return <button key={car.id} className={'carCard '+car.id+' '+(!open?'locked':'')} onClick={()=>open&&onSelect(car.id)} disabled={!open}>
+          <h3>{car.name}</h3><small>{car.rarity} · Speed {car.speed} · Boost {car.boost}</small>
+          <div className="cardCar"><CarGraphic accent={car.accent}/></div>
+          <b className={equipped?'equipped':''}>{equipped?'✓ EQUIPPED':open?'DRIVE THIS CAR':'🔒 '+car.unlock}</b>
         </button>
-      </div>
-      <button className="garageArrow" onClick={()=>move(1)}>›</button>
+      })}
     </div>
-    <div className="garagePager">{CARS.map((x,i)=><i key={x.id} className={i===view?'on':''}/>)}</div>
-    <div className="garageProgress">⭐ {stars} <span>•</span> 🏁 {races}</div>
+    <div className="paintBar"><b>🖌️ PAINT</b><div>{['#ff4f9a','#53d5ff','#ffd44f','#65e63d','#fff','#a952ef'].map(x=><i key={x} style={{background:x}}/>)}</div></div>
+    <div className="garageProgress">⭐ {stars}　🏁 {races}</div>
   </section>
 }
 
 function Results({kind,world,nextWorld,onContinue,onAgain,onHome}:any){
   const story=kind==='story';
-  return <section className="resultsScreen"><div className="resultBurst">★</div><span>{story?'WORLD COMPLETE':'RACE COMPLETE'}</span><h2>{story?(world.id==='city'?'THE CITY SINGS AGAIN!':'THE PARADE IS MOVING!'):'FINISH LINE!'}</h2><p>{story?(String(world.reward)+' coins earned. Your progress is saved.'):'50 coins earned. Race progress saved.'}</p><div className="resultButtons">{story&&nextWorld&&<button className="cta continueResult" onClick={onContinue}>CONTINUE TO {nextWorld.title.toUpperCase()} →</button>}{story&&!nextWorld&&<button className="cta continueResult" onClick={onContinue}>BACK TO STORY ROAD →</button>}<button className="ghost" onClick={onAgain}>{story?'REPLAY WORLD':'RACE AGAIN'}</button><button className="ghost" onClick={onHome}>HOME</button></div></section>
+  return <section className="ckResults">
+    <KidLogo small/>
+    <div className="resultStar">★</div>
+    <span>{story?'WORLD COMPLETE':'RACE COMPLETE'}</span>
+    <h2>{story?(world.id==='city'?'THE CITY SINGS AGAIN!':'THE PARADE IS MOVING!'):'FINISH LINE!'}</h2>
+    <p>{story?(String(world.reward)+' coins earned!'):'50 coins earned!'}</p>
+    {story&&nextWorld&&<button className="megaPlay resultContinue" onClick={onContinue}><span className="playDisc">▶</span><strong>NEXT ADVENTURE</strong></button>}
+    {story&&!nextWorld&&<button className="megaPlay resultContinue" onClick={onContinue}><span className="playDisc">▶</span><strong>STORY ROAD</strong></button>}
+    <div className="resultMini"><button onClick={onAgain}>↻ PLAY AGAIN</button><button onClick={onHome}>⌂ HOME</button></div>
+  </section>
 }
+
 
 function ProgressDots({total,step,pulse=-1,listening=false}:any){return <div className="progressDots">{Array.from({length:total},(_:any,i:number)=><i key={i} className={(i<step?'done ':'')+(listening&&i===pulse?'pulse':'')}/>)}</div>}
 function PianoKeys({onKey,disabled=false,highlight=-1}:any){return <div className={'keys '+(disabled?'disabled':'')}>{NOTES.map((n,i)=><button key={n} disabled={disabled} className={highlight===i?'hint':''} onPointerDown={()=>onKey(i)} style={{'--key':COLORS[i]}}><span>{n}</span><small>{['A','S','D','F'][i]}</small></button>)}</div>}
