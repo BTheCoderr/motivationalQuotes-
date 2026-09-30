@@ -49,6 +49,7 @@ function hideAllStoryScreens(){
 }
 function restoreGameChrome(){
   window.CARKEYS_STORY_UI=null;
+  window.CARKEYS_WORLD_STATE=null;
   memoryPhase='idle';
   document.body.classList.remove('storyPlaying','storyListening');
   if($('songSelect'))$('songSelect').style.display='';
@@ -68,6 +69,19 @@ function syncStoryChrome(){
     chapter:(sceneIndex+1)+'/'+selected.scenes.length,
     pattern:s.listenFirst&&memoryPhase==='listen'?'LISTEN':Math.min(step,s.pattern.length)+'/'+s.pattern.length,
     worldShort:short.length>10?short.split(' ')[0]:short
+  };
+  const prior=window.CARKEYS_WORLD_STATE||{};
+  window.CARKEYS_WORLD_STATE={
+    active:true,
+    storyId:selected.id,
+    world:selected.mapTitle,
+    sceneIndex,
+    sceneName:s.name,
+    progress:Math.min(step,s.pattern.length),
+    total:s.pattern.length,
+    memoryPhase,
+    pulseIndex:Number.isInteger(prior.pulseIndex)?prior.pulseIndex:-1,
+    twinMode
   };
   if($('songSelect'))$('songSelect').style.display='none';
   if($('storyFooter')){
@@ -208,12 +222,14 @@ function demoPattern(){
       if(!active||token!==runToken)return;
       const all=dots();all.forEach(x=>x.classList.remove('now'));
       if(all[i])all[i].classList.add('now');
+      if(window.CARKEYS_WORLD_STATE)window.CARKEYS_WORLD_STATE.pulseIndex=i;
       tone(n,0);
     },i*560);
   });
   setTimeout(()=>{
     if(!active||token!==runToken)return;
     locked=false;step=0;memoryPhase=s.listenFirst?'repeat':'idle';
+    if(window.CARKEYS_WORLD_STATE)window.CARKEYS_WORLD_STATE.pulseIndex=-1;
     document.body.classList.remove('storyListening');
     renderMission();setStoryRoadPattern();
     if(s.listenFirst)clearGlow();
@@ -238,7 +254,9 @@ function beginScene(){
 function celebrate(){
   if(!active||!selected)return;
   const token=runToken,s=selected.scenes[sceneIndex];
-  locked=true;clearGlow();step=s.pattern.length;syncStoryChrome();try{notes=[]}catch{}
+  locked=true;clearGlow();step=s.pattern.length;syncStoryChrome();
+  if(window.CARKEYS_WORLD_STATE)window.CARKEYS_WORLD_STATE.pulseIndex=-1;
+  try{notes=[]}catch{}
   try{showFlash(sceneIndex===selected.scenes.length-1?'STORY CLEAR!':'MISSION CLEAR!','#ffd166',true)}catch{}
   speak(s.success,.92,1.18);
   const text=box?.querySelector('.storyMissionText');if(text)text.textContent=s.success;
