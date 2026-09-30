@@ -85,7 +85,7 @@ function syncStoryChrome(){
 function setStoryRoadPattern(){
   if(!active||!selected)return;
   const s=selected.scenes[sceneIndex];
-  if(s.listenFirst&&!twinMode){try{notes=[]}catch{};return}
+  if(s.listenFirst){try{notes=[]}catch{};return}
   let elapsed=0;
   try{elapsed=Math.max(0,performance.now()-startTime)}catch{}
   const base=elapsed+(twinMode?900:1050);
@@ -170,7 +170,13 @@ function renderMission(){
   const memoryMode=!!s.listenFirst;
   box.style.display='block';
   box.classList.toggle('twinMission',twinMode);
-  if(twinMode){
+  if(twinMode&&memoryMode){
+    const listening=memoryPhase==='listen';
+    box.innerHTML='<div class="twinMissionIcon">'+s.icon+'</div>'+
+      '<div class="twinMissionTitle">'+s.name.toUpperCase()+'</div>'+
+      '<div class="twinMemoryState '+(listening?'listen':'repeat')+'">'+(listening?'👂 LISTEN':'🎹 COPY IT!')+'</div>'+
+      '<div class="twinMemoryDots">'+s.pattern.map((n,i)=>'<span class="'+(!listening&&i<step?'done':'')+'">•</span>').join('')+'</div>';
+  }else if(twinMode){
     const next=step<s.pattern.length?labels[s.pattern[step]]:'★';
     box.innerHTML='<div class="twinMissionIcon">'+s.icon+'</div>'+
       '<div class="twinMissionTitle">'+s.name.toUpperCase()+'</div>'+
@@ -187,7 +193,7 @@ function renderMission(){
       '<div class="storyDots">'+s.pattern.map((n,i)=>'<span class="'+(i<step?'done':i===step?'now':'')+'">'+labels[n]+'</span>').join('')+'</div>';
   }
   clearGlow();syncStoryChrome();
-  if(!locked&&(twinMode||s.guide||mistakes>=2)&&(!s.listenFirst||twinMode)&&step<s.pattern.length)glow(s.pattern[step],true);
+  if(!locked&&!s.listenFirst&&(twinMode||s.guide||mistakes>=2)&&step<s.pattern.length)glow(s.pattern[step],true);
 }
 function demoPattern(){
   if(!active||!selected)return;
@@ -196,7 +202,7 @@ function demoPattern(){
   document.body.classList.toggle('storyListening',!!s.listenFirst);
   try{notes=[]}catch{}
   renderMission();
-  const dots=()=>box?.querySelectorAll('.memoryDots span')||[];
+  const dots=()=>box?.querySelectorAll('.memoryDots span, .twinMemoryDots span')||[];
   s.pattern.forEach((n,i)=>{
     setTimeout(()=>{
       if(!active||token!==runToken)return;
@@ -286,7 +292,11 @@ function storyHit(lane){
     if(step>=s.pattern.length)celebrate();else{renderMission();setStoryRoadPattern()}
   }else{
     mistakes++;
-    if(twinMode){
+    if(twinMode&&s.listenFirst){
+      try{showFlash('HEAR IT AGAIN','#67e8ff',false);buzz(20)}catch{}
+      step=0;memoryPhase='listen';locked=true;renderMission();
+      setTimeout(demoPattern,450);
+    }else if(twinMode){
       try{showFlash('TRY '+labels[want],'#67e8ff',false);buzz(20)}catch{}
       renderMission();setStoryRoadPattern();glow(want,true);
     }else if(s.listenFirst){
