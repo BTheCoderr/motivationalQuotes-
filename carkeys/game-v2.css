@@ -75,3 +75,20 @@ body.storyPlaying .storyFooter{max-width:none}
   .memoryState{font-size:12px;padding:6px 10px}
   .memoryDots span{width:32px;height:32px}
 }
+
+/* Twin Mode memory challenge: interactive-cartoon simple. */
+body.twinPlaying .storyMission.twinMission{top:24px;width:min(88%,390px);padding:16px 16px 14px;border-radius:20px}
+body.twinPlaying .twinMissionIcon{font-size:30px;margin-bottom:3px}
+body.twinPlaying .twinMissionTitle{font-size:12px;letter-spacing:.12em;color:#aeb9da;margin-bottom:9px}
+.twinMemoryState{display:inline-flex;align-items:center;justify-content:center;min-width:150px;border-radius:999px;padding:9px 15px;font-size:19px;font-weight:1000;letter-spacing:.04em;margin:2px auto 12px}
+.twinMemoryState.listen{background:#3b2f17;color:#ffd166;border:1px solid #ffd16666;box-shadow:0 0 20px #ffd16620}
+.twinMemoryState.repeat{background:#12382d;color:#7df0a3;border:1px solid #7df0a355;box-shadow:0 0 20px #7df0a31c}
+.twinMemoryDots{display:flex;justify-content:center;gap:10px}
+.twinMemoryDots span{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#141d35;border:2px solid #34416d;color:#7e8bb5;font-size:18px;font-weight:1000;transition:.14s}
+.twinMemoryDots span.now{background:#4b3a17;border-color:#ffd166;color:#ffd166;transform:scale(1.16);box-shadow:0 0 24px #ffd16680}
+.twinMemoryDots span.done{background:#12382d;border-color:#7df0a3;color:#7df0a3;box-shadow:0 0 16px #7df0a344}
+body.twinPlaying.storyListening .pianoKey{opacity:.28;pointer-events:none;filter:grayscale(.5)}
+body.twinPlaying.storyListening .keys:before{content:'LISTEN';position:absolute;left:50%;top:-26px;transform:translateX(-50%);background:#1a1428;color:#ffd166;border:1px solid #ffd16655;border-radius:999px;padding:4px 10px;font-size:9px;font-weight:1000;letter-spacing:.16em}
+body.twinPlaying:not(.storyListening) .keys:before{content:none}
+body.twinPlaying .keys{gap:8px}
+body.twinPlaying .pianoKey{border-radius:18px}
