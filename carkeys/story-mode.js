@@ -78,9 +78,13 @@ function renderMap(){
       '<h3>'+story.mapTitle+'</h3>'+
       '<p>'+story.subtitle+'</p>'+
       (lockCopy?'<small>'+lockCopy+'</small>':'')+
-      '<button class="worldPlay" '+(!unlocked||story.comingSoon?'disabled':'')+'>'+status+'</button>';
+      '<button class="worldPlay">'+status+'</button>';
     const btn=card.querySelector('button');
-    if(unlocked&&!story.comingSoon)btn.onclick=()=>selectStory(story.id);
+    btn.onclick=()=>{
+      if(!unlocked){try{toast('Finish the previous world first 🔒')}catch{};return}
+      if(story.comingSoon){try{toast('This road is still being built 🚧')}catch{};return}
+      selectStory(story.id);
+    };
     map.appendChild(card);
     if(i<STORIES.length-1){
       const road=document.createElement('div');road.className='mapConnector';road.textContent='•••';map.appendChild(road);
