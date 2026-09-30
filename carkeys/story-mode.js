@@ -13,14 +13,63 @@ function isUnlocked(story){
   return false;
 }
 function stopSpeech(){try{speechSynthesis.cancel()}catch{}}
-function speak(text,rate=.92,pitch=1.1){
+let guideVoices=[];
+function refreshGuideVoices(){
+  try{guideVoices=speechSynthesis.getVoices()||[]}catch{guideVoices=[]}
+}
+try{
+  refreshGuideVoices();
+  speechSynthesis.addEventListener?.('voiceschanged',refreshGuideVoices);
+}catch{}
+function chooseGuideVoice(){
+  refreshGuideVoices();
+  const preferred=['samantha','ava','allison','zoe','nicky','jamie','eddy','reed','sandy','shelley','alex','karen','moira','tessa','daniel','google us english','aria','jenny'];
+  const scored=guideVoices
+    .filter(v=>/^en([-_]|$)/i.test(v.lang||''))
+    .map(v=>{
+      const name=(v.name||'').toLowerCase();
+      let score=0;
+      if((v.lang||'').toLowerCase()==='en-us')score+=24;
+      if(v.localService)score+=14;
+      if(/premium|enhanced|natural/.test(name))score+=45;
+      const p=preferred.findIndex(n=>name.includes(n));
+      if(p>=0)score+=70-p;
+      if(/compact|espeak|festival/.test(name))score-=100;
+      return {v,score};
+    }).sort((a,b)=>b.score-a.score);
+  return scored[0]&&scored[0].score>20?scored[0].v:null;
+}
+function speakGuide(text,delay=0){
   if(!text)return;
-  try{
-    stopSpeech();
-    const u=new SpeechSynthesisUtterance(text);
-    u.rate=rate;u.pitch=pitch;u.volume=.92;
-    speechSynthesis.speak(u);
-  }catch{}
+  setTimeout(()=>{
+    try{
+      const voice=chooseGuideVoice();
+      if(!voice)return;
+      stopSpeech();
+      const u=new SpeechSynthesisUtterance(text);
+      u.voice=voice;u.lang=voice.lang||'en-US';
+      u.rate=.94;u.pitch=1.02;u.volume=.78;
+      speechSynthesis.speak(u);
+    }catch{}
+  },delay);
+}
+const GUIDE_LINES={
+  'city-music':[
+    {start:"Let's wake the lights.",success:"Whoa... the lights are waking up!"},
+    {start:"The bridge needs our rhythm.",success:"Nice! The bridge is open!"},
+    {start:"Shh... listen.",success:"You got the echo!"},
+    {start:"One more melody. Bring the music home!",success:"Look! The whole city is singing!"}
+  ],
+  'rhythm-forest':[
+    {start:"Rabbit needs the beat.",success:"There he goes!"},
+    {start:"Let's fix the parade sign.",success:"Nice work!"},
+    {start:"Shh... Owl has a rhythm.",success:"You got Owl's rhythm!"},
+    {start:"Let's start the parade!",success:"The whole forest is moving!"}
+  ]
+};
+function guideLine(kind){
+  const line=GUIDE_LINES[selected?.id]?.[sceneIndex];
+  return line?.[kind]||'';
 }
 function tone(lane,delay=0){
   setTimeout(()=>{try{noteSound(lane,'perfect')}catch{}},delay);
@@ -256,8 +305,11 @@ function beginScene(){
   else setStoryRoadPattern();
   if(!s.listenFirst){
     musicalLine('',s.pattern);
+    speakGuide(guideLine('start'),220);
+  }else{
+    speakGuide(guideLine('start'),80);
   }
-  if(s.listenFirst)setTimeout(demoPattern,twinMode?450:650);
+  if(s.listenFirst)setTimeout(demoPattern,twinMode?720:850);
 }
 function celebrate(){
   if(!active||!selected)return;
@@ -267,13 +319,14 @@ function celebrate(){
   try{notes=[]}catch{}
   try{showFlash(sceneIndex===selected.scenes.length-1?'STORY CLEAR!':'MISSION CLEAR!','#ffd166',true)}catch{}
   storyJingle(sceneIndex===selected.scenes.length-1?'finish':'good');
+  speakGuide(guideLine('success'),260);
   const text=box?.querySelector('.storyMissionText');if(text)text.textContent=s.success;
   box?.querySelectorAll('.storyDots span').forEach(x=>x.className='done');
   setTimeout(()=>{
     if(!active||token!==runToken)return;
     if(sceneIndex<selected.scenes.length-1){sceneIndex++;beginScene()}
     else finishStory();
-  },twinMode?1050:2200);
+  },twinMode?1450:2200);
 }
 function finishStory(){
   active=false;locked=false;clearGlow();stopSpeech();if(box)box.style.display='none';
@@ -285,6 +338,7 @@ function finishStory(){
   }
   try{showFlash(twinMode?'YOU DID IT!':'ADVENTURE COMPLETE!','#7df0a3',true)}catch{}
   storyJingle('finish');
+  speakGuide(selected.id==='city-music'?'You did it! The city is singing!':'You did it!',280);
   const reward=first?'🎁 <strong>'+selected.reward.label+' + '+selected.reward.coins+' coins!</strong>':'✨ <strong>Story complete!</strong>';
   setTimeout(()=>{
     $('finalScore').textContent='STORY';
@@ -355,7 +409,8 @@ function startSelectedStory(){
   }catch{}
   musicalLine('',[0,1,2,3]);
   try{if(typeof drum==='function'){drum('kick');setTimeout(()=>drum('hat'),330);setTimeout(()=>drum('snare'),660)}}catch{}
-  setTimeout(()=>{if(active&&token===runToken)beginScene()},twinMode?760:1050);
+  if(selected.id==='city-music')speakGuide("Ready? Let's bring the music back.",300);
+  setTimeout(()=>{if(active&&token===runToken)beginScene()},twinMode?1200:1350);
 }
 function startTwinMode(){
   if(!STORIES.length)return;
