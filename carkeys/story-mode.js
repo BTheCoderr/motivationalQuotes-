@@ -230,8 +230,8 @@ function finishStory(){
   if(first){
     try{coins+=(selected.reward?.coins||100);saveMeta()}catch{}
   }
-  try{showFlash('ADVENTURE COMPLETE!','#7df0a3',true)}catch{}
-  speak(selected.finishText,.9,1.14);
+  try{showFlash(twinMode?'YOU DID IT!':'ADVENTURE COMPLETE!','#7df0a3',true)}catch{}
+  speak(twinMode?'You did it! You brought the music back!':selected.finishText,.9,1.14);
   const reward=first?'🎁 <strong>'+selected.reward.label+' + '+selected.reward.coins+' coins!</strong>':'✨ <strong>Story complete!</strong>';
   setTimeout(()=>{
     $('finalScore').textContent='STORY';
@@ -239,15 +239,15 @@ function finishStory(){
     $('finalCombo').textContent='HERO';
     $('finalPlace').textContent='CLEAR';
     $('stars').textContent='★★★★';
-    $('unlock').innerHTML=reward+' '+selected.finishText;
+    $('unlock').innerHTML=twinMode?(reward+' You saved the city!'):(reward+' '+selected.finishText);
     $('unlock').classList.add('show');
-    $('endOverlay').querySelector('h2').textContent=selected.finishTitle;
+    $('endOverlay').querySelector('h2').textContent=twinMode?'YOU SAVED THE CITY! 🌟':selected.finishTitle;
     $('endOverlay').style.display='grid';
     if(!previousAgain)previousAgain=$('againBtn').onclick;
-    $('againBtn').textContent='PLAY STORY AGAIN';
+    $('againBtn').textContent=twinMode?'PLAY AGAIN':'PLAY STORY AGAIN';
     $('againBtn').onclick=startSelectedStory;
     renderMap();
-  },1100);
+  },twinMode?700:1100);
 }
 function storyHit(lane){
   if(!active||locked)return false;
