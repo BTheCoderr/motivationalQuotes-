@@ -334,7 +334,7 @@ function Garage({selected,stars,races,onSelect,onBack}:any){
     <div className="garageTop"><button className="back bubbleBack" onClick={onBack}>← DONE</button><h2>GARAGE</h2></div>
     <div className="garageShowcase">
       <button className="garageArrow" onClick={()=>move(-1)}>‹</button>
-      <div className={'singleCar '+(!unlocked?'locked':'')} style={{'--accent':car.accent}}>
+      <div key={car.id} className={'singleCar '+(!unlocked?'locked':'')} style={{'--accent':car.accent}}>
         <div className="singleCarArt"><CarGraphic accent={car.accent}/></div>
         <h3>{car.name}</h3>
         <p>{unlocked?'Pick your ride':'🔒 '+status}</p>
