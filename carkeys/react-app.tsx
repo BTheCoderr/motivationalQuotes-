@@ -89,13 +89,10 @@ function startBeat(mode:'twin'|'story'|'race'|'piano'='race'){
 }
 function stopBeat(){if(beatTimer){clearInterval(beatTimer);beatTimer=null}}
 function jingle(win=false){const seq=win?[0,1,2,3,2,3]:[0,2,3];seq.forEach((n,i)=>setTimeout(()=>playNote(n),i*140));}
-function chooseVoice(){try{
-  const voices=speechSynthesis.getVoices().filter((v:any)=>/^en/i.test(v.lang||''));
-  const preferred=['samantha','ava','allison','zoe','nicky','jamie','reed','sandy','alex','aria','jenny'];
-  const ranked=voices.map((v:any)=>{const n=(v.name||'').toLowerCase();let score=v.localService?20:0;if((v.lang||'').toLowerCase()==='en-us')score+=20;if(/premium|enhanced|natural/.test(n))score+=50;const p=preferred.findIndex(x=>n.includes(x));if(p>=0)score+=70-p;if(/compact|espeak|festival/.test(n))score-=100;return{v,score}}).sort((a:any,b:any)=>b.score-a.score);
-  return ranked[0]&&ranked[0].score>25?ranked[0].v:null;
-}catch{return null}}
-function speak(text:string){try{const voice=chooseVoice();if(!voice)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.voice=voice;u.lang=voice.lang||'en-US';u.rate=.94;u.pitch=1.02;u.volume=.76;speechSynthesis.speak(u)}catch{}}
+function speak(_text:string){
+  // Browser speech synthesis is intentionally disabled. It sounded robotic on iPhone.
+  // Guide voice calls remain in the story flow so we can replace them with real audio assets later.
+}
 
 function App(){
   const [screen,setScreen]=useState('home' as AppScreen);
@@ -128,8 +125,7 @@ function App(){
   function saveProgress(update:(prev:ProgressState)=>ProgressState){setProgress(prev=>{const next=update(prev);try{localStorage.setItem('carkeys2-progress',JSON.stringify(next))}catch{}return next})}
   function later(fn:()=>void,ms:number){const id=setTimeout(fn,ms);timers.current.push(id);return id}
   function clearTimers(){timers.current.forEach(clearTimeout);timers.current=[]}
-  useEffect(()=>()=>{clearTimers();stopBeat();try{speechSynthesis.cancel()}catch{}},[]);
-  useEffect(()=>{try{speechSynthesis.getVoices();(speechSynthesis as any).onvoiceschanged=()=>speechSynthesis.getVoices()}catch{}},[]);
+  useEffect(()=>(()=>{clearTimers();stopBeat()}),[]);
   useEffect(()=>{
     fetch('https://qmxawzkpxmbhxgqrwnoe.supabase.co/rest/v1/cars?select=id&limit=1',{headers:{apikey:'sb_publishable_sWPTd_gLRR8CtIKlEJDM-A_fiTmF8eH'}})
       .then(r=>setBackend(r.ok?'online':'offline')).catch(()=>setBackend('offline'));
@@ -137,7 +133,7 @@ function App(){
   useEffect(()=>{localStorage.setItem('carkeys2-coins',String(coins))},[coins]);
   useEffect(()=>{localStorage.setItem('carkeys2-car',selectedCar)},[selectedCar]);
 
-  function goHome(){clearTimers();stopBeat();try{speechSynthesis.cancel()}catch{};setMessage('');setScreen('home')}
+  function goHome(){clearTimers();stopBeat();setMessage('');setScreen('home')}
   function introMusic(mode:'twin'|'story'|'race'|'piano'='race'){
     const p=pace(mode);
     [0,1,2,3].forEach((n,i)=>later(()=>playNote(n),i*p.intro));
@@ -282,7 +278,7 @@ function PlayScreen({mode,world,scene,sceneIndex,step,phase,pulse,message,car,on
           : <div className="bigPrompt">{message||<>TAP <b>{next}</b></>}</div>}
         <ProgressDots total={scene.pattern.length} step={step} pulse={pulse} listening={memory&&phase==='listen'} />
       </div>
-      <WorldStage world={world} scene={scene} step={step} pulse={pulse} phase={phase} car={car}/>
+      <WorldStage key={world.id+'-'+scene.id} world={world} scene={scene} step={step} pulse={pulse} phase={phase} car={car}/>
     </div>
     <PianoKeys onKey={onKey} disabled={memory&&phase==='listen'} highlight={!memory?scene.pattern[Math.min(step,scene.pattern.length-1)]:-1}/>
   </section>
