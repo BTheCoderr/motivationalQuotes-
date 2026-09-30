@@ -228,7 +228,16 @@ function TopBar({coins,stars,backend,onHome,compact}:any){
   return <header className={'top '+(compact?'compact':'')}><button className="brand" onClick={onHome} aria-label="CarKeys home"><span className="logoNote">♪</span><span className="brandWord">CarKeys</span></button><div className="topMeta"><span className={'cloud '+backend}>● {backend==='online'?'READY':backend==='checking'?'CONNECTING':'OFFLINE'}</span><span className="starsMeta">⭐ {stars}</span><span className="coins">🪙 {coins}</span></div></header>
 }
 function Home({progress,hasContinue,continueWorld,continueScene,onContinue,onTwin,onStory,onRace,onPiano,onGarage}:any){
-  return <section className="homeScreen"><div className="heroWorld"><div className="moon"/><div className="skyline"/><div className="heroRoad"><div className="lane l1"/><div className="lane l2"/><div className="lane l3"/><div className="heroCar"><CarGraphic accent="#53e7ff"/></div></div><div className="heroCopy"><span className="kicker">MUSIC POWERS THE ROAD</span><h1>DRIVE THE<br/><em>ADVENTURE.</em></h1><p>Play the keys. Change the world.</p></div></div>
+  return <section className="homeScreen"><div className="heroWorld">
+    <div className="homeLogo" aria-label="CarKeys"><span>C</span><span>a</span><span>r</span><span>K</span><span>e</span><span>y</span><span>s</span><b>♪</b></div>
+    <div className="homeSparkles"><i>♪</i><i>★</i><i>♫</i><i>♪</i></div>
+    <div className="homeCitySign">City<br/>of<br/><b>Music</b></div>
+    <div className="moon"/><div className="skyline"/>
+    <div className="heroRoad"><div className="roadMotion"/><div className="lane l1"/><div className="lane l2"/><div className="lane l3"/></div>
+    <div className="homeCoins"><i>♛</i><i>♛</i><i>♛</i></div>
+    <div className="heroCar"><CarGraphic accent="#23a8ff"/></div>
+    <div className="heroCopy"><span className="kicker">MUSIC POWERS THE ROAD</span><p>Play the keys. Change the world.</p></div>
+  </div>
     <div className="modeDock">
       {hasContinue&&<button className="continueCard" onClick={onContinue}><span>▶</span><div><b>CONTINUE ADVENTURE</b><small>{continueWorld.icon} {continueWorld.title} · {continueScene.title}</small></div><i>KEEP GOING →</i></button>}
       <button className="modeCard twinCard" onClick={onTwin}><span className="modeIcon">⭐</span><b>TWIN MODE</b><small>One thing at a time</small><i>START FRESH →</i></button>
@@ -255,7 +264,7 @@ function PlayScreen({mode,world,scene,sceneIndex,step,phase,pulse,message,car,on
 }
 function WorldStage({world,scene,step,pulse,phase,car}:any){
   const forest=world.theme==='forest';
-  return <div className={'worldStage scene-'+scene.id+' '+(forest?'forestStage':'cityStage')}><div className="worldSky"><div className="stars"/><div className={forest?'forestBack':'cityBack'}/></div><div className="road3d"><span className="roadLine a"/><span className="roadLine b"/><span className="roadLine c"/></div>
+  return <div className={'worldStage moving scene-'+scene.id+' step-'+step+' '+(forest?'forestStage':'cityStage')}><div className="worldSky"><div className="stars"/><div className={forest?'forestBack':'cityBack'}/></div><div className="road3d"><div className="roadFlow"/><span className="roadLine a"/><span className="roadLine b"/><span className="roadLine c"/></div><div className="motionCoins"><i>★</i><i>★</i><i>★</i></div>
     {scene.id==='lights'&&<div className="streetlights">{[0,1,2,3].map(i=><span key={i} className={i<step?'on':''}><i/></span>)}</div>}
     {scene.id==='bridge'&&<div className={'bridge '+(step>=2?'leftOpen ':'')+(step>=4?'rightOpen':'')}><span className="tower left"/><span className="deck left"/><span className="deck right"/><span className="tower right"/></div>}
     {scene.id==='tunnel'&&<div className="tunnel">{[0,1,2,3].map(i=><span key={i} className={(phase==='listen'?i===pulse:i<step)?'lit':''} style={{'--c':COLORS[i]}} />)}</div>}
@@ -266,11 +275,11 @@ function WorldStage({world,scene,step,pulse,phase,car}:any){
       {scene.id==='owl'&&<><span className="animal owl">🦉</span><div className="fireflies">{scene.pattern.map((_:any,i:number)=><i key={i} className={(phase==='listen'?i===pulse:i<step)?'on':''} style={{'--c':COLORS[i]}}/>)}</div></>}
       {scene.id==='parade'&&<div className="parade">{['🐇','🐦','🦉','🦊','🦌','🐿️'].map((a,i)=><span key={i} className={i<step?'on':''}>{a}</span>)}</div>}
     </div>}
-    <div className="playerCar"><CarGraphic accent={car.accent}/></div>
+    <div className="playerCar" key={scene.id+'-'+step}><CarGraphic accent={car.accent}/></div>
   </div>
 }
 function RaceScreen({pattern,step,score,combo,car,onKey,onHome}:any){
-  const want=pattern[step%pattern.length];return <section className="gameScreen raceMode"><div className="raceHud"><div><span>SCORE</span><b>{score}</b></div><div><span>COMBO</span><b>{combo}x</b></div><div><span>CHECKPOINT</span><b>{Math.min(step+1,pattern.length)}/{pattern.length}</b></div></div><div className="worldStage scene-race"><div className="worldSky"><div className="stars"/><div className="cityBack"/></div><div className="road3d"><span className="roadLine a"/><span className="roadLine b"/><span className="roadLine c"/></div><div className="raceCue"><small>NEXT KEY</small><b style={{color:COLORS[want]}}>{NOTES[want]}</b></div><div className="playerCar raceCar"><CarGraphic accent={car.accent}/></div></div><PianoKeys onKey={onKey} highlight={want}/><button className="smallHome" onClick={onHome}>⌂</button></section>
+  const want=pattern[step%pattern.length];return <section className="gameScreen raceMode"><div className="raceHud"><div><span>SCORE</span><b>{score}</b></div><div><span>COMBO</span><b>{combo}x</b></div><div><span>CHECKPOINT</span><b>{Math.min(step+1,pattern.length)}/{pattern.length}</b></div></div><div className="worldStage moving scene-race"><div className="worldSky"><div className="stars"/><div className="cityBack"/></div><div className="road3d"><div className="roadFlow fast"/><span className="roadLine a"/><span className="roadLine b"/><span className="roadLine c"/></div><div className="motionCoins fast"><i>★</i><i>★</i><i>★</i></div><div className="raceCue"><small>NEXT KEY</small><b style={{color:COLORS[want]}}>{NOTES[want]}</b></div><div className="playerCar raceCar" key={'race-'+step}><CarGraphic accent={car.accent}/></div></div><PianoKeys onKey={onKey} highlight={want}/><button className="smallHome" onClick={onHome}>⌂</button></section>
 }
 function PianoScreen({onKey,onHome}:any){
   return <section className="pianoScreen"><div className="freeGlow"><span>🎹 FREE PLAY</span><h2>MAKE THE ROAD SING.</h2><p>No score. No wrong notes. Just play.</p></div><div className="pianoStage"><div className="soundRings"><i/><i/><i/></div><CarGraphic accent="#53e7ff"/></div><PianoKeys onKey={onKey}/><button className="smallHome" onClick={onHome}>⌂</button></section>
