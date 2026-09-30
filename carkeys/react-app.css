@@ -364,3 +364,75 @@ button:active{transform:translateY(3px)}
 .world small{display:none!important}
 .world{grid-template-columns:62px 1fr auto;min-height:104px}
 .storyText p{max-width:430px}
+
+
+/* v22: fluidity pass */
+button{transition:transform .12s ease,filter .16s ease,box-shadow .16s ease}
+button:active{transform:translateY(2px) scale(.98)}
+.heroWorld,.simpleMenu,.worldPath,.storyPoster,.playFrame,.garageShowcase,.resultsScreen{
+  animation:screenFlow .42s cubic-bezier(.2,.8,.2,1) both
+}
+.simpleMenu{animation-delay:.06s}
+@keyframes screenFlow{
+  from{opacity:0;transform:translateY(10px) scale(.99)}
+  to{opacity:1;transform:none}
+}
+.worldStage,.pianoStage{
+  animation:stageFlow .5s cubic-bezier(.2,.85,.25,1) both;
+  transform-origin:50% 70%
+}
+@keyframes stageFlow{
+  from{opacity:.25;transform:scale(1.025) translateY(6px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+.compactMission,.raceBar,.freeChip{
+  animation:overlayFlow .38s .08s cubic-bezier(.2,.9,.2,1) both
+}
+@keyframes overlayFlow{
+  from{opacity:0;transform:translate(-50%,-8px) scale(.96)}
+  to{opacity:1;transform:translate(-50%,0) scale(1)}
+}
+.raceBar{animation-name:raceOverlayFlow}
+@keyframes raceOverlayFlow{
+  from{opacity:0;transform:translateY(-8px) scale(.97)}
+  to{opacity:1;transform:none}
+}
+.keys button{
+  transition:transform .12s ease,filter .16s ease,box-shadow .16s ease,outline-color .16s ease
+}
+.keys button:active{
+  transform:translateY(5px) scale(.97);
+  filter:brightness(1.06)
+}
+.progressDots i{transition:background .22s ease,box-shadow .22s ease,transform .22s ease}
+.progressDots i.done{transform:scale(1.06)}
+.carImage{transition:filter .2s ease;will-change:transform}
+.playerCar{
+  animation:carCruiseSoft 1.8s ease-in-out infinite alternate!important;
+  will-change:transform
+}
+@keyframes carCruiseSoft{
+  from{transform:translateX(-50%) translateY(1px) rotate(-.35deg) scale(1.02)}
+  to{transform:translateX(-50%) translateY(-4px) rotate(.35deg) scale(1.035)}
+}
+.worldStage .playerCar{animation:carNoteMove .55s cubic-bezier(.18,.8,.2,1),carCruiseSoft 1.8s .55s ease-in-out infinite alternate!important}
+@keyframes carNoteMove{
+  0%{transform:translateX(-50%) translateY(0) scale(1)}
+  45%{transform:translateX(-50%) translateY(-11px) scale(1.045)}
+  100%{transform:translateX(-50%) translateY(0) scale(1.02)}
+}
+.raceCar{animation:raceCarMove .42s cubic-bezier(.18,.8,.2,1),carCruiseSoft 1s .42s ease-in-out infinite alternate!important}
+@keyframes raceCarMove{
+  0%{transform:translateX(-50%) translateY(0) scale(1)}
+  50%{transform:translateX(-50%) translateY(-9px) scale(1.055)}
+  100%{transform:translateX(-50%) translateY(0) scale(1.02)}
+}
+.roadFlow{animation-timing-function:linear;will-change:background-position}
+.cityBack,.forestBack{will-change:transform}
+.singleCar{animation:garageCarFlow .34s cubic-bezier(.2,.85,.2,1) both}
+@keyframes garageCarFlow{
+  from{opacity:.2;transform:translateX(10px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+.garageArrow:active{transform:translateY(2px) scale(.94)}
+.homeLogo,.heroCar,.homeCoins,.homeSparkles{will-change:transform}
