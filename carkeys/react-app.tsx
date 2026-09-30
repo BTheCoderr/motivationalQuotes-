@@ -228,24 +228,35 @@ function TopBar({coins,stars,backend,onHome,compact}:any){
   return <header className={'top '+(compact?'compact':'')}><button className="brand" onClick={onHome} aria-label="CarKeys home"><span className="logoNote">♪</span><span className="brandWord">CarKeys</span></button><div className="topMeta"><span className={'cloud '+backend}>● {backend==='online'?'READY':backend==='checking'?'CONNECTING':'OFFLINE'}</span><span className="starsMeta">⭐ {stars}</span><span className="coins">🪙 {coins}</span></div></header>
 }
 function Home({progress,hasContinue,continueWorld,continueScene,onContinue,onTwin,onStory,onRace,onPiano,onGarage}:any){
-  return <section className="homeScreen"><div className="heroWorld">
-    <div className="homeLogo" aria-label="CarKeys"><span>C</span><span>a</span><span>r</span><span>K</span><span>e</span><span>y</span><span>s</span><b>♪</b></div>
-    <div className="homeSparkles"><i>♪</i><i>★</i><i>♫</i><i>♪</i></div>
-    <div className="homeCitySign">City<br/>of<br/><b>Music</b></div>
-    <div className="moon"/><div className="skyline"/>
-    <div className="heroRoad"><div className="roadMotion"/><div className="lane l1"/><div className="lane l2"/><div className="lane l3"/></div>
-    <div className="homeCoins"><i>♛</i><i>♛</i><i>♛</i></div>
-    <div className="heroCar"><CarGraphic accent="#23a8ff"/></div>
-    <div className="heroCopy"><span className="kicker">MUSIC POWERS THE ROAD</span><p>Play the keys. Change the world.</p></div>
-  </div>
-    <div className="modeDock">
-      {hasContinue&&<button className="continueCard" onClick={onContinue}><span>▶</span><div><b>CONTINUE ADVENTURE</b><small>{continueWorld.icon} {continueWorld.title} · {continueScene.title}</small></div><i>KEEP GOING →</i></button>}
-      <button className="modeCard twinCard" onClick={onTwin}><span className="modeIcon">⭐</span><b>TWIN MODE</b><small>One thing at a time</small><i>START FRESH →</i></button>
-      <button className="modeCard storyCard" onClick={onStory}><span className="modeIcon">📖</span><b>STORY</b><small>{progress.completedWorlds.length}/{WORLDS.length} worlds complete · {progress.stars} ★</small><i>EXPLORE →</i></button>
-      <div className="miniModes"><button onClick={onRace}>🏁 <b>Race</b></button><button onClick={onPiano}>🎹 <b>Piano Play</b></button><button onClick={onGarage}>🚗 <b>Garage</b></button></div>
+  return <section className="homeScreen simpleHome">
+    <div className="heroWorld">
+      <div className="homeLogo" aria-label="CarKeys"><span>C</span><span>a</span><span>r</span><span>K</span><span>e</span><span>y</span><span>s</span><b>♪</b></div>
+      <div className="homeStats"><span>⭐ {progress.stars}</span><span>🪙 {Number(localStorage.getItem('carkeys2-coins')||'0')}</span></div>
+      <div className="homeSparkles"><i>♪</i><i>★</i><i>♫</i></div>
+      <div className="homeCitySign">CITY OF<br/><b>MUSIC</b></div>
+      <div className="skyline"/>
+      <div className="heroRoad"><div className="roadMotion"/></div>
+      <div className="homeCoins"><i>★</i><i>★</i></div>
+      <div className="heroCar"><CarGraphic accent="#23a8ff"/></div>
+    </div>
+
+    <div className="simpleMenu">
+      {hasContinue
+        ? <button className="primaryPlay" onClick={onContinue}><span>▶</span><div><b>CONTINUE</b><small>{continueWorld.title} · {continueScene.title}</small></div></button>
+        : <button className="primaryPlay" onClick={onTwin}><span>▶</span><div><b>PLAY</b><small>Start with Twin Mode</small></div></button>}
+      <div className="mainChoices">
+        <button className="choice twin" onClick={onTwin}><span>⭐</span><b>TWIN MODE</b></button>
+        <button className="choice story" onClick={onStory}><span>📖</span><b>STORY</b></button>
+      </div>
+      <div className="quickChoices">
+        <button onClick={onRace}><span>🏁</span><b>RACE</b></button>
+        <button onClick={onPiano}><span>🎹</span><b>PIANO</b></button>
+        <button onClick={onGarage}><span>🚗</span><b>GARAGE</b></button>
+      </div>
     </div>
   </section>
 }
+
 function WorldMap({progress,onWorld,onBack}:any){
   const cityDone=progress.completedWorlds.includes('city'),forestDone=progress.completedWorlds.includes('forest');
   return <section className="panelScreen"><button className="back" onClick={onBack}>← HOME</button><div className="mapHeader"><span>STORY ROAD</span><h2>KEEP THE ADVENTURE GOING.</h2><p>{progress.stars} ★ earned · progress saves automatically</p></div><div className="worldPath">
@@ -260,8 +271,23 @@ function StoryIntro({world,completed,onStart,onBack}:any){
 }
 function PlayScreen({mode,world,scene,sceneIndex,step,phase,pulse,message,car,onKey,onHome}:any){
   const memory=scene.memory;
-  return <section className={'gameScreen theme-'+world.theme}><div className="mission"><span>{world.icon} {mode==='twin'?'TWIN MODE':world.title.toUpperCase()} · {sceneIndex+1}/{world.scenes.length}</span><h2>{scene.title}</h2>{memory?<><div className={'stateChip '+phase}>{phase==='listen'?'👂 LISTEN':'🎹 COPY IT!'}</div><ProgressDots total={scene.pattern.length} step={step} pulse={pulse} listening={phase==='listen'} /></>:<><div className="oneAction">{message||<>TAP <b>{NOTES[scene.pattern[Math.min(step,scene.pattern.length-1)]]}</b></>}</div><ProgressDots total={scene.pattern.length} step={step}/></>}</div><WorldStage world={world} scene={scene} step={step} pulse={pulse} phase={phase} car={car}/><PianoKeys onKey={onKey} disabled={memory&&phase==='listen'} highlight={!memory?scene.pattern[Math.min(step,scene.pattern.length-1)]:-1}/><button className="smallHome" onClick={onHome}>⌂</button></section>
+  const next=NOTES[scene.pattern[Math.min(step,scene.pattern.length-1)]];
+  return <section className={'gameScreen cleanPlay theme-'+world.theme}>
+    <div className="playFrame">
+      <button className="smallHome" onClick={onHome}>⌂</button>
+      <div className="mission compactMission">
+        <h2>{scene.title}</h2>
+        {memory
+          ? <div className={'bigPrompt '+phase}>{phase==='listen'?'👂 LISTEN':'🎹 COPY IT!'}</div>
+          : <div className="bigPrompt">{message||<>TAP <b>{next}</b></>}</div>}
+        <ProgressDots total={scene.pattern.length} step={step} pulse={pulse} listening={memory&&phase==='listen'} />
+      </div>
+      <WorldStage world={world} scene={scene} step={step} pulse={pulse} phase={phase} car={car}/>
+    </div>
+    <PianoKeys onKey={onKey} disabled={memory&&phase==='listen'} highlight={!memory?scene.pattern[Math.min(step,scene.pattern.length-1)]:-1}/>
+  </section>
 }
+
 function WorldStage({world,scene,step,pulse,phase,car}:any){
   const forest=world.theme==='forest';
   return <div className={'worldStage moving scene-'+scene.id+' step-'+step+' '+(forest?'forestStage':'cityStage')}><div className="worldSky"><div className="stars"/><div className={forest?'forestBack':'cityBack'}/></div><div className="road3d"><div className="roadFlow"/><span className="roadLine a"/><span className="roadLine b"/><span className="roadLine c"/></div><div className="motionCoins"><i>★</i><i>★</i><i>★</i></div>
@@ -279,15 +305,54 @@ function WorldStage({world,scene,step,pulse,phase,car}:any){
   </div>
 }
 function RaceScreen({pattern,step,score,combo,car,onKey,onHome}:any){
-  const want=pattern[step%pattern.length];return <section className="gameScreen raceMode"><div className="raceHud"><div><span>SCORE</span><b>{score}</b></div><div><span>COMBO</span><b>{combo}x</b></div><div><span>CHECKPOINT</span><b>{Math.min(step+1,pattern.length)}/{pattern.length}</b></div></div><div className="worldStage moving scene-race"><div className="worldSky"><div className="stars"/><div className="cityBack"/></div><div className="road3d"><div className="roadFlow fast"/><span className="roadLine a"/><span className="roadLine b"/><span className="roadLine c"/></div><div className="motionCoins fast"><i>★</i><i>★</i><i>★</i></div><div className="raceCue"><small>NEXT KEY</small><b style={{color:COLORS[want]}}>{NOTES[want]}</b></div><div className="playerCar raceCar" key={'race-'+step}><CarGraphic accent={car.accent}/></div></div><PianoKeys onKey={onKey} highlight={want}/><button className="smallHome" onClick={onHome}>⌂</button></section>
+  const want=pattern[step%pattern.length];
+  return <section className="gameScreen raceMode cleanRace">
+    <div className="playFrame">
+      <button className="smallHome" onClick={onHome}>⌂</button>
+      <div className="raceBar"><span>🏁 {Math.min(step+1,pattern.length)}/{pattern.length}</span><b>NEXT <em style={{color:COLORS[want]}}>{NOTES[want]}</em></b></div>
+      <div className="worldStage moving scene-race"><div className="worldSky"><div className="stars"/><div className="cityBack"/></div><div className="road3d"><div className="roadFlow fast"/></div><div className="motionCoins fast"><i>★</i><i>★</i><i>★</i></div><div className="playerCar raceCar" key={'race-'+step}><CarGraphic accent={car.accent}/></div></div>
+    </div>
+    <PianoKeys onKey={onKey} highlight={want}/>
+  </section>
 }
+
 function PianoScreen({onKey,onHome}:any){
-  return <section className="pianoScreen"><div className="freeGlow"><span>🎹 FREE PLAY</span><h2>MAKE THE ROAD SING.</h2><p>No score. No wrong notes. Just play.</p></div><div className="pianoStage"><div className="soundRings"><i/><i/><i/></div><CarGraphic accent="#53e7ff"/></div><PianoKeys onKey={onKey}/><button className="smallHome" onClick={onHome}>⌂</button></section>
+  return <section className="pianoScreen cleanPiano">
+    <div className="playFrame">
+      <button className="smallHome" onClick={onHome}>⌂</button>
+      <div className="freeChip">🎹 FREE PLAY</div>
+      <div className="pianoStage"><div className="soundRings"><i/><i/><i/></div><div className="pianoCar"><CarGraphic accent="#23a8ff"/></div></div>
+    </div>
+    <PianoKeys onKey={onKey}/>
+  </section>
 }
+
 function Garage({selected,stars,races,onSelect,onBack}:any){
-  const unlocked=(i:number)=>i===0||(i===1&&races>=1)||(i===2&&stars>=6)||(i===3&&stars>=10);
-  return <section className="panelScreen garage"><button className="back bubbleBack" onClick={onBack}>← DONE</button><div className="mapHeader garageTitle"><span>⭐ YOUR RIDES ⭐</span><h2>GARAGE</h2><p>{stars} stars · {races} races finished</p></div><div className="carGrid">{CARS.map((car,i)=><button key={car.id} className={'carCard '+(selected===car.id?'selected ':'')+(!unlocked(i)?'locked':'')} onClick={()=>unlocked(i)&&onSelect(car.id)} style={{'--accent':car.accent}}><div className="carCardArt"><CarGraphic accent={car.accent}/></div><b>{car.name}</b><em>{car.rarity} · Speed {car.speed} · Boost {car.boost}</em><small>{unlocked(i)?(selected===car.id?'✓ EQUIPPED':'TAP TO DRIVE'):'🔒 '+car.unlock}</small></button>)}</div><div className="paintBar"><b>🎨 PAINT</b><span/><span/><span/><span/><span/><span/></div></section>
+  const initial=Math.max(0,CARS.findIndex(c=>c.id===selected));
+  const [view,setView]=useState(initial);
+  const car=CARS[view];
+  const unlocked=view===0||(view===1&&races>=1)||(view===2&&stars>=6)||(view===3&&stars>=10);
+  const status=unlocked?(selected===car.id?'EQUIPPED':'READY'):car.unlock;
+  const move=(dir:number)=>setView((view+dir+CARS.length)%CARS.length);
+  return <section className="panelScreen garage simpleGarage">
+    <div className="garageTop"><button className="back bubbleBack" onClick={onBack}>← DONE</button><h2>GARAGE</h2></div>
+    <div className="garageShowcase">
+      <button className="garageArrow" onClick={()=>move(-1)}>‹</button>
+      <div className={'singleCar '+(!unlocked?'locked':'')} style={{'--accent':car.accent}}>
+        <div className="singleCarArt"><CarGraphic accent={car.accent}/></div>
+        <h3>{car.name}</h3>
+        <p>{unlocked?'Pick your ride':'🔒 '+status}</p>
+        <button className="equipBtn" disabled={!unlocked||selected===car.id} onClick={()=>unlocked&&onSelect(car.id)}>
+          {selected===car.id?'✓ EQUIPPED':unlocked?'DRIVE THIS CAR':'LOCKED'}
+        </button>
+      </div>
+      <button className="garageArrow" onClick={()=>move(1)}>›</button>
+    </div>
+    <div className="garagePager">{CARS.map((x,i)=><i key={x.id} className={i===view?'on':''}/>)}</div>
+    <div className="garageProgress">⭐ {stars} <span>•</span> 🏁 {races}</div>
+  </section>
 }
+
 function Results({kind,world,nextWorld,onContinue,onAgain,onHome}:any){
   const story=kind==='story';
   return <section className="resultsScreen"><div className="resultBurst">★</div><span>{story?'WORLD COMPLETE':'RACE COMPLETE'}</span><h2>{story?(world.id==='city'?'THE CITY SINGS AGAIN!':'THE PARADE IS MOVING!'):'FINISH LINE!'}</h2><p>{story?(String(world.reward)+' coins earned. Your progress is saved.'):'50 coins earned. Race progress saved.'}</p><div className="resultButtons">{story&&nextWorld&&<button className="cta continueResult" onClick={onContinue}>CONTINUE TO {nextWorld.title.toUpperCase()} →</button>}{story&&!nextWorld&&<button className="cta continueResult" onClick={onContinue}>BACK TO STORY ROAD →</button>}<button className="ghost" onClick={onAgain}>{story?'REPLAY WORLD':'RACE AGAIN'}</button><button className="ghost" onClick={onHome}>HOME</button></div></section>
