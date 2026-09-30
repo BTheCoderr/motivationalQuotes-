@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<meta name="theme-color" content="#090b14" />
+<title>CarKeys</title>
+<style>
+:root{--bg:#090b14;--panel:#11162a;--line:#29325a;--text:#f7f8ff;--muted:#9aa3c7;--cyan:#65e7ff;--pink:#ff66c4;--gold:#ffd166;--green:#7df0a3;--danger:#ff6b7a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:radial-gradient(circle at 50% 0,#151d3c 0,#090b14 50%,#05060a 100%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+button,select{font:inherit}
+#app{height:100%;display:flex;flex-direction:column;max-width:900px;margin:0 auto;padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
+.top{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:2px 2px 8px}.brand{font-weight:900;letter-spacing:.03em;font-size:20px}.brand span{color:var(--cyan)}
+.stats{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.pill{background:rgba(17,22,42,.88);border:1px solid rgba(101,231,255,.18);border-radius:999px;padding:6px 9px;font-size:12px;color:var(--muted);backdrop-filter:blur(8px)}.pill b{color:var(--text)}
+.stage{position:relative;flex:1;min-height:0;border-radius:20px;overflow:hidden;border:1px solid #222a49;background:linear-gradient(#121936 0 25%,#0b1023 25% 100%);box-shadow:0 18px 70px rgba(0,0,0,.35)}
+canvas{width:100%;height:100%;display:block;touch-action:none}.hud{position:absolute;left:10px;right:10px;top:10px;display:flex;justify-content:space-between;pointer-events:none}.hudbox{background:rgba(4,7,16,.58);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:8px 10px;backdrop-filter:blur(10px);font-size:12px}.hudbox strong{display:block;font-size:18px}.combo{color:var(--gold)}
+.centerMsg{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;text-align:center}.flash{font-size:34px;font-weight:1000;text-shadow:0 4px 24px #000;opacity:0;transform:scale(.8);transition:.12s}.flash.show{opacity:1;transform:scale(1)}
+.controls{padding-top:9px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.key{position:relative;border:0;border-radius:14px;min-height:74px;background:linear-gradient(#fff,#dfe5f6);color:#121522;font-weight:900;font-size:22px;box-shadow:inset 0 -5px 0 #b7bfd5,0 6px 18px rgba(0,0,0,.28);touch-action:none}.key small{display:block;font-size:10px;color:#707791;margin-top:2px}.key.active{transform:translateY(3px);box-shadow:inset 0 -2px 0 #b7bfd5;background:linear-gradient(#dffbff,#aeefff)}
+.bottom{display:flex;gap:8px;align-items:center;padding-top:8px}.songSelect{flex:1;background:#11162a;color:#fff;border:1px solid #2c355d;border-radius:12px;padding:10px}.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:900;background:linear-gradient(135deg,var(--cyan),#6b8cff);color:#08101c}.btn.secondary{background:#171d35;color:#fff;border:1px solid #2c355d}.boostWrap{flex:1;height:10px;background:#151a2e;border-radius:999px;overflow:hidden;border:1px solid #2b3356}.boost{height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--gold));transition:width .15s}
+.overlay{position:absolute;inset:0;background:rgba(5,7,14,.82);display:grid;place-items:center;padding:20px;backdrop-filter:blur(12px);z-index:5}.card{width:min(520px,100%);background:linear-gradient(180deg,#151c35,#0e1327);border:1px solid #2b355f;border-radius:22px;padding:22px;box-shadow:0 24px 90px #0008}.card h1{font-size:40px;line-height:.95;margin:0 0 8px}.card h1 span{color:var(--cyan)}.card p{color:var(--muted);line-height:1.45}.how{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:14px 0}.how div{background:#0c1122;border:1px solid #252e52;border-radius:13px;padding:10px;font-size:12px}.how b{display:block;color:#fff;margin-bottom:4px}.big{width:100%;padding:14px;font-size:17px;margin-top:8px}.tiny{font-size:11px;color:#737da4;margin-top:10px;text-align:center}.resultGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}.resultGrid div{background:#0b1020;border:1px solid #283155;border-radius:13px;padding:11px;text-align:center}.resultGrid strong{display:block;font-size:22px}.offline{position:absolute;bottom:10px;left:10px;font-size:10px;color:#8790b2;background:#080b14aa;padding:5px 8px;border-radius:999px}
+@media(max-height:700px){.key{min-height:58px}.card{padding:16px}.card h1{font-size:34px}.how{margin:9px 0}.top{padding-bottom:5px}.bottom{padding-top:5px}.controls{padding-top:5px}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top"><div class="brand">CAR<span>KEYS</span> 🎹🏎️</div><div class="stats"><div class="pill">Best <b id="best">0</b></div><div class="pill">Song <b id="songName">First Gear</b></div></div></div>
+  <div class="stage" id="stage">
+    <canvas id="game"></canvas>
+    <div class="hud"><div class="hudbox">SCORE<strong id="score">0</strong></div><div class="hudbox combo">COMBO<strong id="combo">0x</strong></div><div class="hudbox">SPEED<strong><span id="speed">0</span> mph</strong></div></div>
+    <div class="centerMsg"><div id="flash" class="flash">PERFECT</div></div>
+    <div class="offline" id="sourceLabel">Loading CarKeys tracks…</div>
+    <div class="overlay" id="startOverlay">
+      <div class="card"><h1>Drive with the <span>keys.</span></h1><p>Hit the piano notes when they reach the glowing line. Clean timing makes your car accelerate. Build a combo to fill boost.</p><div class="how"><div><b>🎹 HIT NOTES</b>Tap C, D, E, F</div><div><b>🏎️ GO FASTER</b>Better timing = speed</div><div><b>🔥 BUILD BOOST</b>Streaks fill the meter</div></div><button class="btn big" id="startBtn">START RACE</button><div class="tiny">Phone: tap the piano keys · Computer: A S D F</div></div>
+    </div>
+    <div class="overlay" id="endOverlay" style="display:none"><div class="card"><h1>Race <span>finished.</span></h1><div class="resultGrid"><div>Score<strong id="finalScore">0</strong></div><div>Accuracy<strong id="finalAccuracy">0%</strong></div><div>Best combo<strong id="finalCombo">0x</strong></div></div><button class="btn big" id="againBtn">RACE AGAIN</button></div></div>
+  </div>
+  <div class="controls">
+    <button class="key" data-lane="0">C<small>A</small></button><button class="key" data-lane="1">D<small>S</small></button><button class="key" data-lane="2">E<small>D</small></button><button class="key" data-lane="3">F<small>F</small></button>
+  </div>
+  <div class="bottom"><select class="songSelect" id="songSelect"></select><div class="boostWrap"><div class="boost" id="boost"></div></div><button class="btn secondary" id="restartBtn">↻</button></div>
+</div>
+<script>
+const SUPABASE_URL='https://qmxawzkpxmbhxgqrwnoe.supabase.co';
+const SUPABASE_KEY='sb_publishable_sWPTd_gLRR8CtIKlEJDM-A_fiTmF8eH';
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const scoreEl=document.getElementById('score'),comboEl=document.getElementById('combo'),speedEl=document.getElementById('speed'),boostEl=document.getElementById('boost'),flashEl=document.getElementById('flash');
+const startOverlay=document.getElementById('startOverlay'),endOverlay=document.getElementById('endOverlay'),songSelect=document.getElementById('songSelect'),songName=document.getElementById('songName'),bestEl=document.getElementById('best'),sourceLabel=document.getElementById('sourceLabel');
+let DPR=Math.min(2,devicePixelRatio||1),W=0,H=0;
+const fallback=[{slug:'first-gear',title:'First Gear',difficulty:1,bpm:90,duration_ms:43860,note_map:Array.from({length:64},(_,i)=>({time:1800+i*620,lane:[0,1,2,1,0,1,2,3,2,1,0,2,1,3,2,1][i%16]}))}];
+let songs=fallback,currentSong=fallback[0],notes=[],running=false,startTime=0,raf=0,score=0,combo=0,bestCombo=0,hits=0,misses=0,speed=0,boost=0,lastT=0,audio=null,roadOffset=0;
+const colors=['#65e7ff','#ff66c4','#ffd166','#7df0a3'];
+function resize(){const r=canvas.getBoundingClientRect();W=r.width;H=r.height;canvas.width=Math.floor(W*DPR);canvas.height=Math.floor(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0)}
+addEventListener('resize',resize);resize();
+function synth(lane){if(!audio) audio=new (window.AudioContext||window.webkitAudioContext)(); if(audio.state==='suspended')audio.resume(); const o=audio.createOscillator(),g=audio.createGain();o.type='triangle';o.frequency.value=[261.63,293.66,329.63,349.23][lane];g.gain.setValueAtTime(.22,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.25);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+.25)}
+function showFlash(text,color){flashEl.textContent=text;flashEl.style.color=color;flashEl.classList.add('show');clearTimeout(showFlash.t);showFlash.t=setTimeout(()=>flashEl.classList.remove('show'),180)}
+async function loadSongs(){try{const r=await fetch(SUPABASE_URL+'/rest/v1/songs?select=slug,title,difficulty,bpm,duration_ms,note_map&active=eq.true&order=difficulty.asc',{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY}});if(!r.ok)throw new Error();const data=await r.json();if(data&&data.length){songs=data;sourceLabel.textContent='Tracks loaded from CarKeys database';}else throw new Error()}catch{songs=fallback;sourceLabel.textContent='Guest/offline track';}
+ songSelect.innerHTML='';songs.forEach((s,i)=>{const o=document.createElement('option');o.value=i;o.textContent=s.title+' · Lv '+s.difficulty;songSelect.appendChild(o)});chooseSong(0)}
+function chooseSong(i){currentSong=songs[i]||songs[0];songName.textContent=currentSong.title;bestEl.textContent=localStorage.getItem('carkeys-best-'+currentSong.slug)||'0';if(running)reset(false)}
+songSelect.addEventListener('change',()=>chooseSong(+songSelect.value));
+function prepare(){notes=(currentSong.note_map||[]).map((n,i)=>({time:+n.time,lane:+n.lane,hit:false,missed:false,id:i}));score=0;combo=0;bestCombo=0;hits=0;misses=0;speed=24;boost=0;roadOffset=0;scoreEl.textContent='0';comboEl.textContent='0x';speedEl.textContent='24';boostEl.style.width='0%';}
+function start(){prepare();running=true;startOverlay.style.display='none';endOverlay.style.display='none';startTime=performance.now();lastT=startTime;cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
+function reset(showStart=true){running=false;cancelAnimationFrame(raf);prepare();if(showStart){startOverlay.style.display='grid';endOverlay.style.display='none'}draw(0,0)}
+document.getElementById('startBtn').onclick=start;document.getElementById('againBtn').onclick=start;document.getElementById('restartBtn').onclick=()=>reset(true);
+function hitLane(lane){synth(lane);const key=document.querySelector('.key[data-lane="'+lane+'"]');if(key){key.classList.add('active');setTimeout(()=>key.classList.remove('active'),90)}if(!running)return;const t=performance.now()-startTime;let target=null,best=999;for(const n of notes){if(n.hit||n.missed||n.lane!==lane)continue;const d=Math.abs(n.time-t);if(d<best){best=d;target=n}}
+ if(!target||best>230){combo=0;speed=Math.max(18,speed-5);misses++;showFlash('MISS','#ff6b7a');updateHud();return}
+ target.hit=true;hits++;let add=0,label='',c='';if(best<=70){add=1000;label='PERFECT';c='#7df0a3';speed=Math.min(160,speed+8);boost=Math.min(100,boost+7)}else if(best<=140){add=700;label='GREAT';c='#65e7ff';speed=Math.min(160,speed+5);boost=Math.min(100,boost+4)}else{add=450;label='GOOD';c='#ffd166';speed=Math.min(160,speed+3);boost=Math.min(100,boost+2)}combo++;bestCombo=Math.max(bestCombo,combo);score+=Math.round(add*(1+Math.min(combo,30)*.025));if(boost>=100){speed=Math.min(180,speed+18);boost=25;label='BOOST!'}showFlash(label,c);updateHud()}
+function updateHud(){scoreEl.textContent=score.toLocaleString();comboEl.textContent=combo+'x';speedEl.textContent=Math.round(speed);boostEl.style.width=boost+'%'}
+for(const b of document.querySelectorAll('.key')){const lane=+b.dataset.lane;b.addEventListener('pointerdown',e=>{e.preventDefault();hitLane(lane)})}
+addEventListener('keydown',e=>{if(e.repeat)return;const map={a:0,s:1,d:2,f:3};if(map[e.key.toLowerCase()]!==undefined)hitLane(map[e.key.toLowerCase()]);if(e.key===' '&&!running)start()});
+function finish(){running=false;cancelAnimationFrame(raf);const total=Math.max(1,hits+misses);const acc=Math.round(hits/total*100);document.getElementById('finalScore').textContent=score.toLocaleString();document.getElementById('finalAccuracy').textContent=acc+'%';document.getElementById('finalCombo').textContent=bestCombo+'x';const key='carkeys-best-'+currentSong.slug,old=+(localStorage.getItem(key)||0);if(score>old)localStorage.setItem(key,String(score));bestEl.textContent=Math.max(score,old).toLocaleString();endOverlay.style.display='grid'}
+function loop(now){if(!running)return;const t=now-startTime,dt=Math.min(40,now-lastT);lastT=now;speed=Math.max(18,speed-dt*.0025);roadOffset=(roadOffset+speed*dt*.02)%80;for(const n of notes){if(!n.hit&&!n.missed&&t-n.time>240){n.missed=true;misses++;combo=0;speed=Math.max(18,speed-3)}}updateHud();draw(t);if(t>currentSong.duration_ms)finish();else raf=requestAnimationFrame(loop)}
+function roundRect(x,y,w,h,r,fill){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill()}
+function draw(t=0){ctx.clearRect(0,0,W,H);const horizon=H*.30;let g=ctx.createLinearGradient(0,0,0,horizon);g.addColorStop(0,'#151d45');g.addColorStop(1,'#090d1d');ctx.fillStyle=g;ctx.fillRect(0,0,W,horizon);ctx.fillStyle='#060914';ctx.fillRect(0,horizon,W,H-horizon);
+ ctx.fillStyle='#101737';for(let i=0;i<16;i++){const bw=28+(i%4)*12,bh=35+(i*23%95),x=(i*71)%W;ctx.fillRect(x,horizon-bh,bw,bh);ctx.fillStyle=i%2?'#65e7ff44':'#ff66c433';for(let yy=horizon-bh+10;yy<horizon-5;yy+=14)ctx.fillRect(x+8,yy,4,5);ctx.fillStyle='#101737'}
+ ctx.beginPath();ctx.moveTo(W*.36,horizon);ctx.lineTo(W*.64,horizon);ctx.lineTo(W*.94,H);ctx.lineTo(W*.06,H);ctx.closePath();ctx.fillStyle='#151a27';ctx.fill();ctx.strokeStyle='#65e7ff55';ctx.lineWidth=2;ctx.stroke();
+ const laneW=(W*.88)/4,left=W*.06;for(let i=1;i<4;i++){ctx.strokeStyle='#ffffff18';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(W*.36+(W*.28/4)*i,horizon);ctx.lineTo(left+laneW*i,H);ctx.stroke()}
+ for(let y=horizon+(roadOffset%55);y<H;y+=55){const p=(y-horizon)/(H-horizon);const half=(W*.14)+(W*.30*p);ctx.strokeStyle='#ffffff20';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2-half,y);ctx.lineTo(W/2+half,y);ctx.stroke()}
+ const hitY=H*.78;ctx.shadowBlur=18;ctx.shadowColor='#65e7ff';ctx.strokeStyle='#65e7ff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(left,hitY);ctx.lineTo(W-left,hitY);ctx.stroke();ctx.shadowBlur=0;
+ const travel=2400;for(const n of notes){if(n.hit||n.missed)continue;const d=n.time-t;if(d>travel||d<-250)continue;const p=1-d/travel;const y=horizon+(hitY-horizon)*p;const laneCenter=left+laneW*(n.lane+.5);const scale=.5+.55*p;ctx.shadowBlur=12;ctx.shadowColor=colors[n.lane];roundRect(laneCenter-24*scale,y-11*scale,48*scale,22*scale,8*scale,colors[n.lane]);ctx.shadowBlur=0}
+ const carX=W/2,carY=H*.87;ctx.save();ctx.translate(carX,carY);ctx.shadowBlur=25;ctx.shadowColor='#ff66c4aa';ctx.fillStyle='#ff66c4';ctx.beginPath();ctx.moveTo(-42,22);ctx.lineTo(-30,-20);ctx.quadraticCurveTo(0,-43,30,-20);ctx.lineTo(42,22);ctx.closePath();ctx.fill();ctx.fillStyle='#18264f';ctx.fillRect(-22,-18,44,22);ctx.fillStyle='#65e7ff';ctx.fillRect(-31,13,13,7);ctx.fillRect(18,13,13,7);ctx.fillStyle='#080a10';ctx.fillRect(-40,15,11,20);ctx.fillRect(29,15,11,20);ctx.restore();ctx.shadowBlur=0;
+ ctx.font='800 12px system-ui';ctx.textAlign='center';for(let i=0;i<4;i++){ctx.fillStyle=colors[i];ctx.fillText(['C','D','E','F'][i],left+laneW*(i+.5),hitY+24)}
+}
+loadSongs().then(()=>draw());draw();
+</script>
+</body></html>
