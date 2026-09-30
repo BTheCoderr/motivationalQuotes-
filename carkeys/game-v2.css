@@ -4,3 +4,35 @@
 
 .storyFooter{min-width:0;flex:1;display:flex;flex-direction:column;justify-content:center;background:#0b1123;border:1px solid #2d3c67;border-radius:12px;padding:8px 10px;line-height:1.05}.storyFooter span{font-size:8px;letter-spacing:.14em;font-weight:1000;color:var(--gold)}.storyFooter b{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}.storyMission{transition:opacity .16s,transform .16s}.storyMissionText{line-height:1.25}.storyDots span{transition:.15s}.storyDots span.done{transform:scale(.92)}.bottom.storyMode .boostWrap{max-width:150px}
 @media(max-width:520px){.storyFooter{padding:7px 8px}.storyFooter b{font-size:9px}.storyFooter span{font-size:7px}.bottom.storyMode .boostWrap{max-width:105px}}
+
+/* Twin Mode keeps the full game intact, but removes dashboard noise for the simplest play path. */
+.twinBtn{grid-column:1/-1;background:linear-gradient(135deg,#ffd166,#7df0a3);color:#10151e;box-shadow:0 0 30px #ffd1662b}
+.twinBtn small{display:block;font-size:9px;margin-top:3px;letter-spacing:.05em}
+body.twinPlaying .topbar{justify-content:center}
+body.twinPlaying .topbar .topActions{display:none!important}
+body.twinPlaying .hud,
+body.twinPlaying .sourceBadge,
+body.twinPlaying .modeBadge{display:none!important}
+body.twinPlaying .bottom .songSelect,
+body.twinPlaying .bottom .storyFooter,
+body.twinPlaying .bottom .boostWrap,
+body.twinPlaying #restartBtn{display:none!important}
+body.twinPlaying .bottom{justify-content:center}
+body.twinPlaying #pauseBtn{width:72px;height:48px;font-size:20px}
+body.twinPlaying .pianoKey{min-height:88px;font-size:30px}
+body.twinPlaying .pianoKey small{font-size:10px}
+body.twinPlaying .storyMission.twinMission{top:34px;width:min(88%,420px);padding:14px 16px;border-color:#ffd16670;background:#081020f2}
+.twinMissionIcon{font-size:34px;line-height:1}
+.twinMissionTitle{font-size:14px;font-weight:1000;letter-spacing:.04em;margin:5px 0;color:#fff}
+.twinMissionText{font-size:27px;font-weight:1000;line-height:1.05;color:#fff}
+.twinMissionText b{font-size:38px;color:var(--gold);text-shadow:0 0 18px #ffd16666}
+body.twinPlaying #endOverlay .resultGrid,
+body.twinPlaying #garageFromEnd{display:none!important}
+body.twinPlaying #endOverlay .stars{font-size:48px}
+body.twinPlaying #endOverlay .card{text-align:center;max-width:430px}
+body.twinPlaying #endOverlay .unlock{font-size:14px;line-height:1.35}
+@media(max-width:520px){
+  .twinBtn{grid-column:auto}
+  body.twinPlaying .pianoKey{min-height:94px;font-size:32px}
+  body.twinPlaying .storyMission.twinMission{top:24px}
+}
