@@ -77,7 +77,16 @@ function drum(type:'kick'|'hat'|'snare'){try{
   const len=Math.floor(a.sampleRate*.05),buf=a.createBuffer(1,len,a.sampleRate),data=buf.getChannelData(0);for(let i=0;i<len;i++)data[i]=(Math.random()*2-1)*(1-i/len);
   const src=a.createBufferSource(),g=a.createGain(),f=a.createBiquadFilter();src.buffer=buf;f.type='highpass';f.frequency.value=type==='snare'?1700:4800;g.gain.value=type==='snare'?.045:.022;src.connect(f).connect(g).connect(a.destination);src.start();
 }catch{}}
-function startBeat(){stopBeat();let i=0;beatTimer=setInterval(()=>{drum(i%4===0?'kick':i%4===2?'snare':'hat');i++},320)}
+function pace(mode:'twin'|'story'|'race'|'piano'='race'){
+  if(mode==='twin')return {beat:470,intro:390,sceneCue:360,memory:760,listenDelay:850,clearDelay:2100};
+  if(mode==='story')return {beat:390,intro:320,sceneCue:280,memory:650,listenDelay:650,clearDelay:1750};
+  if(mode==='piano')return {beat:430,intro:340,sceneCue:300,memory:650,listenDelay:650,clearDelay:1700};
+  return {beat:330,intro:280,sceneCue:240,memory:580,listenDelay:550,clearDelay:1500};
+}
+function startBeat(mode:'twin'|'story'|'race'|'piano'='race'){
+  stopBeat();let i=0;const p=pace(mode);
+  beatTimer=setInterval(()=>{drum(i%4===0?'kick':i%4===2?'snare':'hat');i++},p.beat);
+}
 function stopBeat(){if(beatTimer){clearInterval(beatTimer);beatTimer=null}}
 function jingle(win=false){const seq=win?[0,1,2,3,2,3]:[0,2,3];seq.forEach((n,i)=>setTimeout(()=>playNote(n),i*140));}
 function chooseVoice(){try{
@@ -129,26 +138,30 @@ function App(){
   useEffect(()=>{localStorage.setItem('carkeys2-car',selectedCar)},[selectedCar]);
 
   function goHome(){clearTimers();stopBeat();try{speechSynthesis.cancel()}catch{};setMessage('');setScreen('home')}
-  function introMusic(){[0,1,2,3].forEach((n,i)=>later(()=>playNote(n),i*260));later(()=>drum('kick'),0);later(()=>drum('hat'),260);later(()=>drum('snare'),520)}
+  function introMusic(mode:'twin'|'story'|'race'|'piano'='race'){
+    const p=pace(mode);
+    [0,1,2,3].forEach((n,i)=>later(()=>playNote(n),i*p.intro));
+    later(()=>drum('kick'),0);later(()=>drum('hat'),p.intro);later(()=>drum('snare'),p.intro*2);
+  }
   function startStory(mode:PlayMode,targetWorld=0,targetScene=0){
     clearTimers();setPlayMode(mode);setWorldIndex(targetWorld);setSceneIndex(targetScene);setStep(0);setMemoryPhase('idle');setPulse(-1);setMessage('');setScreen('play');
     saveProgress(prev=>prev.completedWorlds.includes(WORLDS[targetWorld].id)?prev:{...prev,started:true,world:targetWorld,scene:targetScene,mode});
-    startBeat();introMusic();
+    startBeat(mode);introMusic(mode);
     speak(targetWorld===0?"Ready? Let's bring the music back.":"Ready? Let's find the forest beat.");
-    later(()=>beginScene(targetScene,mode,targetWorld),1050);
+    later(()=>beginScene(targetScene,mode,targetWorld),mode==='twin'?1550:1200);
   }
   function continueAdventure(){startStory(progress.mode,progress.world,progress.scene)}
   function beginScene(index:number,mode=playMode,targetWorld=worldIndex){
     clearTimers();setWorldIndex(targetWorld);setSceneIndex(index);setStep(0);setPulse(-1);setMessage('');
     saveProgress(prev=>prev.completedWorlds.includes(WORLDS[targetWorld].id)?prev:{...prev,started:true,world:targetWorld,scene:index,mode});
-    const s=WORLDS[targetWorld].scenes[index];
-    if(s.memory){setMemoryPhase('listen');speak(s.line);later(()=>playMemory(s),500)}
-    else{setMemoryPhase('idle');s.pattern.forEach((n:number,i:number)=>later(()=>playNote(n,true),i*180));later(()=>speak(s.line),180)}
+    const s=WORLDS[targetWorld].scenes[index],p=pace(mode);
+    if(s.memory){setMemoryPhase('listen');speak(s.line);later(()=>playMemory(s,mode),p.listenDelay)}
+    else{setMemoryPhase('idle');s.pattern.forEach((n:number,i:number)=>later(()=>playNote(n,true),i*p.sceneCue));later(()=>speak(s.line),mode==='twin'?300:220)}
   }
-  function playMemory(s:any){
-    setMemoryPhase('listen');setStep(0);
-    s.pattern.forEach((n:number,i:number)=>later(()=>{setPulse(i);playNote(n)},i*520));
-    later(()=>{setPulse(-1);setMemoryPhase('copy');setMessage('COPY IT!')},s.pattern.length*520+330);
+  function playMemory(s:any,mode:PlayMode=playMode){
+    const p=pace(mode);setMemoryPhase('listen');setStep(0);
+    s.pattern.forEach((n:number,i:number)=>later(()=>{setPulse(i);playNote(n)},i*p.memory));
+    later(()=>{setPulse(-1);setMemoryPhase('copy');setMessage('COPY IT!')},s.pattern.length*p.memory+(mode==='twin'?650:420));
   }
   function completeScene(){
     const key=world.id+':'+scene.id;
@@ -158,7 +171,7 @@ function App(){
     if(sceneIndex<world.scenes.length-1){
       const nextScene=sceneIndex+1;
       saveProgress(prev=>({...prev,world:worldIndex,scene:nextScene,mode:playMode,started:true}));
-      later(()=>beginScene(nextScene,playMode,worldIndex),1450);
+      later(()=>beginScene(nextScene,playMode,worldIndex),pace(playMode).clearDelay);
       return;
     }
     const worldAlreadyDone=progress.completedWorlds.includes(world.id);
@@ -169,21 +182,21 @@ function App(){
     });
     if(!worldAlreadyDone)setCoins((v:number)=>v+world.reward);
     setResultKind('story');setResultWorld(worldIndex);setResultNextWorld(nextBuilt);
-    later(()=>{setScreen('results');stopBeat()},1450);
+    later(()=>{setScreen('results');stopBeat()},pace(playMode).clearDelay);
   }
   function hitStory(lane:number){
     if(screen!=='play')return;playNote(lane);if(scene.memory&&memoryPhase!=='copy')return;
     const want=scene.pattern[step];
     if(lane!==want){
       setMessage(scene.memory?'HEAR IT AGAIN':'TRY '+NOTES[want]);
-      if(scene.memory){setMemoryPhase('listen');later(()=>playMemory(scene),420)}
+      if(scene.memory){setMemoryPhase('listen');later(()=>playMemory(scene,playMode),playMode==='twin'?750:500)}
       return;
     }
     const next=step+1;setStep(next);setMessage('');
     if(next>=scene.pattern.length)completeScene();
   }
   const racePattern=useMemo(()=>[0,1,2,3,1,2,0,3,2,1,0,0,2,3,1,3],[]);
-  function startRace(){clearTimers();setRaceStep(0);setRaceScore(0);setRaceCombo(0);setResultKind('race');setScreen('race');startBeat();introMusic()}
+  function startRace(){clearTimers();setRaceStep(0);setRaceScore(0);setRaceCombo(0);setResultKind('race');setScreen('race');startBeat('race');introMusic('race')}
   function hitRace(lane:number){
     playNote(lane);const want=racePattern[raceStep%racePattern.length];
     if(lane===want){
@@ -200,7 +213,7 @@ function App(){
 
   return <main className={'app '+screen}>
     <TopBar coins={coins} stars={progress.stars} backend={backend} onHome={goHome} compact={screen!=='home'} />
-    {screen==='home'&&<Home progress={progress} hasContinue={hasContinue} continueWorld={continueWorld} continueScene={continueScene} onContinue={continueAdventure} onTwin={()=>startStory('twin',0,0)} onStory={()=>setScreen('map')} onRace={startRace} onPiano={()=>{setScreen('piano');startBeat()}} onGarage={()=>setScreen('garage')} />}
+    {screen==='home'&&<Home progress={progress} hasContinue={hasContinue} continueWorld={continueWorld} continueScene={continueScene} onContinue={continueAdventure} onTwin={()=>startStory('twin',0,0)} onStory={()=>setScreen('map')} onRace={startRace} onPiano={()=>{setScreen('piano');startBeat('piano')}} onGarage={()=>setScreen('garage')} />}
     {screen==='map'&&<WorldMap progress={progress} onWorld={openWorldStory} onBack={goHome} />}
     {screen==='story'&&<StoryIntro world={world} completed={progress.completedWorlds.includes(world.id)} onStart={()=>startStory('story',worldIndex,0)} onBack={()=>setScreen('map')} />}
     {screen==='play'&&<PlayScreen mode={playMode} world={world} scene={scene} sceneIndex={sceneIndex} step={step} phase={memoryPhase} pulse={pulse} message={message} car={car} onKey={hitStory} onHome={goHome} />}
@@ -275,6 +288,25 @@ function Results({kind,world,nextWorld,onContinue,onAgain,onHome}:any){
 
 function ProgressDots({total,step,pulse=-1,listening=false}:any){return <div className="progressDots">{Array.from({length:total},(_:any,i:number)=><i key={i} className={(i<step?'done ':'')+(listening&&i===pulse?'pulse':'')}/>)}</div>}
 function PianoKeys({onKey,disabled=false,highlight=-1}:any){return <div className={'keys '+(disabled?'disabled':'')}>{NOTES.map((n,i)=><button key={n} disabled={disabled} className={highlight===i?'hint':''} onPointerDown={()=>onKey(i)} style={{'--key':COLORS[i]}}><span>{n}</span><small>{['A','S','D','F'][i]}</small></button>)}</div>}
-function CarGraphic({accent}:any){return <div className="carArt" style={{'--accent':accent}}><div className="carGlow"/><div className="carShell"><div className="glass"/><i className="light l"/><i className="light r"/><span className="plate">KEYS</span></div><i className="wheel wl"/><i className="wheel wr"/></div>}
+function CarGraphic({accent}:any){
+  return <div className="carArt" style={{'--accent':accent}}>
+    <div className="carGlow"/>
+    <svg className="carSvg" viewBox="0 0 140 120" aria-hidden="true">
+      <ellipse className="carShadow" cx="70" cy="105" rx="48" ry="10"/>
+      <rect className="tire tireL" x="18" y="58" width="16" height="42" rx="7"/>
+      <rect className="tire tireR" x="106" y="58" width="16" height="42" rx="7"/>
+      <path className="bodyMain" d="M28 96 L22 79 Q23 51 42 31 Q54 18 70 18 Q86 18 98 31 Q117 51 118 79 L112 96 Q94 106 70 106 Q46 106 28 96 Z"/>
+      <path className="bodyHighlight" d="M37 51 Q51 27 70 27 Q89 27 103 51 L96 56 Q84 44 70 44 Q56 44 44 56 Z"/>
+      <path className="rearGlass" d="M45 48 Q55 29 70 29 Q85 29 95 48 L89 61 H51 Z"/>
+      <path className="trunk" d="M36 69 Q70 60 104 69 L100 89 Q70 97 40 89 Z"/>
+      <rect className="tailLight left" x="34" y="75" width="23" height="10" rx="4"/>
+      <rect className="tailLight right" x="83" y="75" width="23" height="10" rx="4"/>
+      <rect className="bumper" x="42" y="91" width="56" height="8" rx="4"/>
+      <rect className="plateSvg" x="56" y="85" width="28" height="12" rx="2"/>
+      <text x="70" y="94" textAnchor="middle" className="plateText">KEYS</text>
+      <circle className="exhaust" cx="37" cy="99" r="3"/><circle className="exhaust" cx="103" cy="99" r="3"/>
+    </svg>
+  </div>
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
