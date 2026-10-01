@@ -236,39 +236,20 @@ function TopBar({coins,stars,backend,onHome,compact}:any){
 }
 
 function Home({coins,progress,hasContinue,continueWorld,continueScene,onContinue,onTwin,onStory,onRace,onPiano,onGarage}:any){
-  return <section className="ckHome">
-    <div className="ckSky">
-      <div className="statPill star">⭐ <b>{progress.stars}</b></div>
-      <div className="statPill coin">🪙 <b>{coins}</b></div>
-      <button className="gearBtn" aria-label="Settings">⚙</button>
-      <KidLogo/>
-      <span className="floatNote n1">♪</span><span className="floatNote n2">♫</span><span className="floatNote n3">♪</span>
-      <div className="cityMusicSign">CITY<br/><small>of</small><br/>MUSIC</div>
-      <div className="cityWorld">
-        <div className="cityBlocks"><i/><i/><i/><i/><i/><i/><i/></div>
-        <div className="musicArch">♪</div>
-        <div className="homeTrack"><span/><span/><span/></div>
-        <div className="homeCar"><CarGraphic accent="#23a8ff"/></div>
-        <div className="collectibles"><i>🪙</i><i>🪙</i><i>★</i></div>
-      </div>
-    </div>
-
-    <div className="ckHomeMenu">
-      <button className="megaPlay" onClick={hasContinue?onContinue:onTwin}>
-        <span className="playDisc">▶</span>
-        <strong>{hasContinue?'CONTINUE ADVENTURE':'PLAY'}</strong>
-        {hasContinue&&<small>{continueWorld.title} · {continueScene.title}</small>}
-      </button>
-
-      <div className="modeGrid topModes">
-        <button className="modeTile twin" onClick={onTwin}><span>🚙🚗</span><b>TWIN MODE</b></button>
-        <button className="modeTile story" onClick={onStory}><span>📖</span><b>STORY MODE</b></button>
-      </div>
-      <div className="modeGrid bottomModes">
-        <button className="modeTile race" onClick={onRace}><span>🏁</span><b>RACE</b></button>
-        <button className="modeTile piano" onClick={onPiano}><span>🎹</span><b>PIANO PLAY</b></button>
-        <button className="modeTile garageTile" onClick={onGarage}><span>🏠</span><b>GARAGE</b></button>
-      </div>
+  const primary=hasContinue?onContinue:onTwin;
+  return <section className="artScreen homeArtScreen">
+    <div className="artCanvas homeArtCanvas">
+      <img className="screenArt" src="/assets/ui/home.webp" alt="" draggable="false"/>
+      <span className="artCount starCount">{progress.stars}</span>
+      <span className="artCount coinCount">{coins}</span>
+      <button className="artHotspot settingsSpot" aria-label="Settings" onClick={()=>{}} />
+      <button className="artHotspot continueSpot" aria-label={hasContinue?'Continue Adventure':'Play'} onClick={primary} />
+      <button className="artHotspot twinSpot" aria-label="Twin Mode" onClick={onTwin} />
+      <button className="artHotspot storySpot" aria-label="Story Mode" onClick={onStory} />
+      <button className="artHotspot raceSpot" aria-label="Race" onClick={onRace} />
+      <button className="artHotspot pianoSpot" aria-label="Piano Play" onClick={onPiano} />
+      <button className="artHotspot garageSpot" aria-label="Garage" onClick={onGarage} />
+      {!hasContinue&&<div className="firstPlayPatch">PLAY</div>}
     </div>
   </section>
 }
