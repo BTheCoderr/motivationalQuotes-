@@ -508,3 +508,5 @@ button:active{transform:translateY(3px)}
   100%{top:82%;transform:translateX(-50%) scale(1.22);opacity:0}
 }
 .fastTarget{animation-duration:1.35s!important}
+
+.roadTarget{margin-left:0!important}
