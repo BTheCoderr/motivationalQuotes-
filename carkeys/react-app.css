@@ -494,3 +494,17 @@ button:active{transform:translateY(3px)}
   .coreModes button{min-height:58px;flex-direction:row;gap:6px}
   .driveCar .carArt{width:150px!important;height:132px!important}
 }
+
+
+/* v30.1 — road targets line up with the four steering lanes */
+.roadTarget{
+  animation-name:laneTargetApproach!important;
+  transform:none
+}
+@keyframes laneTargetApproach{
+  0%{top:41%;transform:translateX(-50%) scale(.45);opacity:.2}
+  18%{opacity:1}
+  72%{top:67%;transform:translateX(-50%) scale(.92);opacity:1}
+  100%{top:82%;transform:translateX(-50%) scale(1.22);opacity:0}
+}
+.fastTarget{animation-duration:1.35s!important}
