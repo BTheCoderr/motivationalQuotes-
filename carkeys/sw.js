@@ -1,4 +1,4 @@
-const CACHE='carkeys-v29-reset-liked-build-1';
+const CACHE='carkeys-v30-driving-loop-1';
 const CORE=['/','/index.html','/react-app.css','/react-app.tsx','/manifest.webmanifest','/icon.svg','/assets/cars/starter.webp','/assets/cars/neon.webp','/assets/cars/rhythm.webp','/assets/cars/grand.webp'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
