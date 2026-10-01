@@ -21,7 +21,7 @@ const WORLDS=[
     scenes:[
       {id:'lights',title:'Wake the Lights',icon:'💡',pattern:[0,0,0,0],line:"Let's wake the lights.",success:'Whoa... the lights are waking up!'},
       {id:'bridge',title:'Open the Bridge',icon:'🌉',pattern:[0,1,0,1],line:'The bridge needs our rhythm.',success:'Nice! The bridge is open!'},
-      {id:'tunnel',title:'Echo Tunnel',icon:'🔊',pattern:[0,1,2,1],memory:true,line:'Shh... listen.',success:'You got the echo!'},
+      {id:'tunnel',title:'Echo Tunnel',icon:'🔊',pattern:[0,1,2,1],line:'Make the tunnel glow.',success:'You got the echo!'},
       {id:'home',title:'Bring Music Home',icon:'✨',pattern:[0,1,2,3],line:'One more melody. Bring the music home!',success:'Look! The whole city is singing!'},
     ]
   },
@@ -33,8 +33,8 @@ const WORLDS=[
     scenes:[
       {id:'rabbit',title:'Rabbit Steps',icon:'🐇',pattern:[0,0,1,1],line:'Rabbit needs the beat.',success:'There he goes! Two and two!'},
       {id:'woodpecker',title:'Woodpecker Workshop',icon:'🐦',pattern:[2,2,2,2],line:"Let's fix the parade sign.",success:'Four clean knocks!'},
-      {id:'owl',title:'Owl Says',icon:'🦉',pattern:[0,2,1,2],memory:true,line:'Shh... Owl has a rhythm.',success:"You got Owl's rhythm!"},
-      {id:'parade',title:'Moonlight Parade',icon:'🦊',pattern:[0,0,1,2,2,3],line:"Let's start the parade!",success:'The whole forest is moving!'},
+      {id:'owl',title:'Owl Says',icon:'🦉',pattern:[0,2,1,2],line:'Help Owl find the beat.',success:"You got Owl's rhythm!"},
+      {id:'parade',title:'Moonlight Parade',icon:'🦊',pattern:[0,1,2,3],line:"Let's start the parade!",success:'The whole forest is moving!'},
     ]
   }
 ];
@@ -78,8 +78,8 @@ function drum(type:'kick'|'hat'|'snare'){try{
   const src=a.createBufferSource(),g=a.createGain(),f=a.createBiquadFilter();src.buffer=buf;f.type='highpass';f.frequency.value=type==='snare'?1700:4800;g.gain.value=type==='snare'?.045:.022;src.connect(f).connect(g).connect(a.destination);src.start();
 }catch{}}
 function pace(mode:'twin'|'story'|'race'|'piano'='race'){
-  if(mode==='twin')return {beat:470,intro:390,sceneCue:360,memory:760,listenDelay:850,clearDelay:2100};
-  if(mode==='story')return {beat:390,intro:320,sceneCue:280,memory:650,listenDelay:650,clearDelay:1750};
+  if(mode==='twin')return {beat:500,intro:380,sceneCue:340,memory:700,listenDelay:600,clearDelay:1050};
+  if(mode==='story')return {beat:430,intro:330,sceneCue:300,memory:650,listenDelay:550,clearDelay:900};
   if(mode==='piano')return {beat:430,intro:340,sceneCue:300,memory:650,listenDelay:650,clearDelay:1700};
   return {beat:330,intro:280,sceneCue:240,memory:580,listenDelay:550,clearDelay:1500};
 }
@@ -144,15 +144,14 @@ function App(){
     saveProgress(prev=>prev.completedWorlds.includes(WORLDS[targetWorld].id)?prev:{...prev,started:true,world:targetWorld,scene:targetScene,mode});
     startBeat(mode);introMusic(mode);
     speak(targetWorld===0?"Ready? Let's bring the music back.":"Ready? Let's find the forest beat.");
-    later(()=>beginScene(targetScene,mode,targetWorld),mode==='twin'?1550:1200);
+    later(()=>beginScene(targetScene,mode,targetWorld),420);
   }
   function continueAdventure(){startStory(progress.mode,progress.world,progress.scene)}
   function beginScene(index:number,mode=playMode,targetWorld=worldIndex){
-    clearTimers();setWorldIndex(targetWorld);setSceneIndex(index);setStep(0);setPulse(-1);setMessage('');
+    clearTimers();setWorldIndex(targetWorld);setSceneIndex(index);setStep(0);setPulse(-1);setMessage('');setMemoryPhase('idle');
     saveProgress(prev=>prev.completedWorlds.includes(WORLDS[targetWorld].id)?prev:{...prev,started:true,world:targetWorld,scene:index,mode});
-    const s=WORLDS[targetWorld].scenes[index],p=pace(mode);
-    if(s.memory){setMemoryPhase('listen');speak(s.line);later(()=>playMemory(s,mode),p.listenDelay)}
-    else{setMemoryPhase('idle');s.pattern.forEach((n:number,i:number)=>later(()=>playNote(n,true),i*p.sceneCue));later(()=>speak(s.line),mode==='twin'?300:220)}
+    const s=WORLDS[targetWorld].scenes[index];
+    later(()=>playNote(s.pattern[0],true),260);
   }
   function playMemory(s:any,mode:PlayMode=playMode){
     const p=pace(mode);setMemoryPhase('listen');setStep(0);
@@ -163,7 +162,7 @@ function App(){
     const key=world.id+':'+scene.id;
     const firstSceneClear=!progress.completedScenes.includes(key);
     if(firstSceneClear)saveProgress(prev=>({...prev,stars:prev.stars+1,completedScenes:[...prev.completedScenes,key]}));
-    jingle(sceneIndex===world.scenes.length-1);speak(scene.success);
+    setMessage('NICE! ⭐');jingle(sceneIndex===world.scenes.length-1);
     if(sceneIndex<world.scenes.length-1){
       const nextScene=sceneIndex+1;
       saveProgress(prev=>({...prev,world:worldIndex,scene:nextScene,mode:playMode,started:true}));
@@ -181,17 +180,15 @@ function App(){
     later(()=>{setScreen('results');stopBeat()},pace(playMode).clearDelay);
   }
   function hitStory(lane:number){
-    if(screen!=='play')return;playNote(lane);if(scene.memory&&memoryPhase!=='copy')return;
-    const want=scene.pattern[step];
-    if(lane!==want){
-      setMessage(scene.memory?'HEAR IT AGAIN':'TRY '+NOTES[want]);
-      if(scene.memory){setMemoryPhase('listen');later(()=>playMemory(scene,playMode),playMode==='twin'?750:500)}
-      return;
-    }
+    if(screen!=='play')return;
+    playNote(lane);
+    const want=scene.pattern[Math.min(step,scene.pattern.length-1)];
+    if(lane!==want)return;
     const next=step+1;setStep(next);setMessage('');
+    if(next<scene.pattern.length)later(()=>playNote(scene.pattern[next],true),220);
     if(next>=scene.pattern.length)completeScene();
   }
-  const racePattern=useMemo(()=>[0,1,2,3,1,2,0,3,2,1,0,0,2,3,1,3],[]);
+  const racePattern=useMemo(()=>[0,1,2,3,1,2,0,3],[]);
   function startRace(){clearTimers();setRaceStep(0);setRaceScore(0);setRaceCombo(0);setResultKind('race');setScreen('race');startBeat('race');introMusic('race')}
   function hitRace(lane:number){
     playNote(lane);const want=racePattern[raceStep%racePattern.length];
@@ -300,30 +297,21 @@ function StoryIntro({world,completed,onStart,onBack,onGarage}:any){
 }
 
 function PlayScreen({mode,world,scene,sceneIndex,step,phase,pulse,message,car,onKey,onHome,onGarage}:any){
-  const memory=scene.memory;
+  const done=step>=scene.pattern.length;
   const next=NOTES[scene.pattern[Math.min(step,scene.pattern.length-1)]];
-  return <section className={'ckPlay '+(mode==='twin'?'twinClean ':'')+'theme-'+world.theme}>
-    <div className="gameHead"><KidLogo small/><button className="purpleGarage" onClick={onGarage}>🏠<small>Garage</small></button></div>
-    <div className="missionBoard">
-      <div className="missionPic">{scene.icon}</div>
-      <div className="missionWords">
-        <h2>{scene.title.toUpperCase()}</h2>
-        {memory
-          ? <div className={'tapPrompt '+phase}>{phase==='listen'?'👂 LISTEN':'🎹 COPY IT!'}</div>
-          : <div className="tapPrompt">{message||<>TAP <b>{next}</b></>}</div>}
-        <ProgressDots total={scene.pattern.length} step={step} pulse={pulse} listening={memory&&phase==='listen'} />
-      </div>
+  return <section className={'ckPlay simpleAdventure theme-'+world.theme}>
+    <div className="simpleMission">
+      <h2><span>{scene.icon}</span>{scene.title.toUpperCase()}</h2>
+      <div className={'tapPrompt '+(done?'success':'')}>{done||message?message:<>TAP <b>{next}</b></>}</div>
+      <ProgressDots total={scene.pattern.length} step={step}/>
     </div>
     <div className="gameWorldWrap">
       <button className="pauseOrb" aria-label="Home" onClick={onHome}>⌂</button>
-      <div className="worldSign">{world.title}</div>
-      <WorldStage key={world.id+'-'+scene.id} world={world} scene={scene} step={step} pulse={pulse} phase={phase} car={car}/>
+      <WorldStage key={world.id+'-'+scene.id} world={world} scene={scene} step={step} pulse={pulse} phase="idle" car={car}/>
     </div>
-    <PianoKeys onKey={onKey} disabled={memory&&phase==='listen'} highlight={!memory?scene.pattern[Math.min(step,scene.pattern.length-1)]:-1}/>
+    <PianoKeys onKey={onKey} disabled={done} highlight={done?-1:scene.pattern[Math.min(step,scene.pattern.length-1)]}/>
   </section>
 }
-
-
 
 function WorldStage({world,scene,step,pulse,phase,car}:any){
   const forest=world.theme==='forest';
@@ -351,22 +339,27 @@ function WorldStage({world,scene,step,pulse,phase,car}:any){
 
 
 function RaceScreen({pattern,step,score,combo,car,onKey,onHome,onGarage}:any){
-  const want=pattern[step%pattern.length];
-  return <section className="ckPlay raceMode">
-    <div className="gameHead"><KidLogo small/><button className="purpleGarage" onClick={onGarage}>🏠<small>Garage</small></button></div>
-    <div className="raceMission"><span>🏁 {Math.min(step+1,pattern.length)}/{pattern.length}</span><b>NEXT <em style={{color:COLORS[want]}}>{NOTES[want]}</em></b><small>⭐ {score}</small></div>
-    <div className="gameWorldWrap"><button className="pauseOrb" onClick={onHome}>Ⅱ</button><div className="worldSign">City of Music</div>
+  const done=step>=pattern.length;
+  const want=pattern[Math.min(step,pattern.length-1)];
+  return <section className="ckPlay simpleAdventure raceMode">
+    <div className="simpleMission">
+      <h2><span>🏁</span>RACE</h2>
+      <div className={'tapPrompt '+(done?'success':'')}>{done?'NICE! ⭐':<>TAP <b>{NOTES[want]}</b></>}</div>
+      <ProgressDots total={pattern.length} step={step}/>
+    </div>
+    <div className="gameWorldWrap">
+      <button className="pauseOrb" aria-label="Home" onClick={onHome}>⌂</button>
       <div className="worldStage ckWorld moving scene-race"><div className="worldSky"><div className="cityBack"/></div><div className="musicDecor"><i>♪</i><i>♫</i><i>★</i></div><div className="road3d"><div className="roadFlow fast"/></div><div className="motionCoins fast"><i>🪙</i><i>🪙</i><i>🪙</i></div><div className="playerCar raceCar" key={'race-'+step}><CarGraphic accent={car.accent}/></div></div>
     </div>
-    <PianoKeys onKey={onKey} highlight={want}/>
+    <PianoKeys onKey={onKey} disabled={done} highlight={done?-1:want}/>
   </section>
 }
 
 function PianoScreen({onKey,onHome,onGarage}:any){
-  return <section className="ckPlay pianoMode">
-    <div className="gameHead"><KidLogo small/><button className="purpleGarage" onClick={onGarage}>🏠<small>Garage</small></button></div>
-    <div className="raceMission freeMission"><b>🎹 FREE PLAY</b><small>MAKE THE ROAD SING</small></div>
-    <div className="gameWorldWrap"><button className="pauseOrb" onClick={onHome}>⌂</button><div className="worldSign">City of Music</div>
+  return <section className="ckPlay simpleAdventure pianoMode">
+    <div className="simpleMission free"><h2><span>🎹</span>JUST PLAY</h2></div>
+    <div className="gameWorldWrap">
+      <button className="pauseOrb" aria-label="Home" onClick={onHome}>⌂</button>
       <div className="pianoStage ckWorld"><div className="worldSky"><div className="cityBack"/></div><div className="soundRings"><i/><i/><i/></div><div className="pianoCar"><CarGraphic accent="#23a8ff"/></div></div>
     </div>
     <PianoKeys onKey={onKey}/>
@@ -375,19 +368,18 @@ function PianoScreen({onKey,onHome,onGarage}:any){
 
 function Garage({selected,stars,races,onSelect,onBack}:any){
   const unlocked=(i:number)=>i===0||(i===1&&races>=1)||(i===2&&stars>=6)||(i===3&&stars>=10);
-  return <section className="ckGarage">
-    <div className="garageHeader"><div className="garageTitle">★ GARAGE ♪</div><button className="garageDone" onClick={onBack}>← DONE</button></div>
+  return <section className="ckGarage simpleGarageV2">
+    <div className="garageHeader"><div className="garageTitle">GARAGE</div><button className="garageDone" onClick={onBack}>← DONE</button></div>
     <div className="garageCards">
       {CARS.map((car,i)=>{
         const open=unlocked(i),equipped=selected===car.id;
         return <button key={car.id} className={'carCard '+car.id+' '+(!open?'locked':'')} onClick={()=>open&&onSelect(car.id)} disabled={!open}>
-          <h3>{car.name}</h3><small>{car.rarity} · Speed {car.speed} · Boost {car.boost}</small>
+          <h3>{car.name}</h3>
           <div className="cardCar"><CarGraphic accent={car.accent}/></div>
-          <b className={equipped?'equipped':''}>{equipped?'✓ EQUIPPED':open?'DRIVE THIS CAR':'🔒 '+car.unlock}</b>
+          <b className={equipped?'equipped':''}>{equipped?'✓ EQUIPPED':open?'PICK THIS CAR':'🔒 '+car.unlock}</b>
         </button>
       })}
     </div>
-    <div className="paintBar"><b>🖌️ PAINT</b><div>{['#ff4f9a','#53d5ff','#ffd44f','#65e63d','#fff','#a952ef'].map(x=><i key={x} style={{background:x}}/>)}</div></div>
     <div className="garageProgress">⭐ {stars}　🏁 {races}</div>
   </section>
 }
