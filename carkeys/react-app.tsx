@@ -195,7 +195,7 @@ function App(){
   }
   const racePattern=useMemo(()=>[0,1,2,3,1,2,0,3],[]);
 
-  function startRace(){clearTimers();setRaceStep(0);setRaceScore(0);setRaceCombo(0);setResultKind('race');setScreen('race');startBeat('race');introMusic('race')}
+  function startRace(){clearTimers();setDriveLane(1);setRaceStep(0);setRaceScore(0);setRaceCombo(0);setResultKind('race');setScreen('race');startBeat('race');introMusic('race')}
   function hitRace(lane:number){
     setDriveLane(lane);setHitPulse((v:number)=>v+1);playNote(lane);
     try{(navigator as any).vibrate?.(14)}catch{}
@@ -265,7 +265,7 @@ function PlayScreen({mode,world,scene,sceneIndex,step,message,car,lane,hitPulse,
   const done=step>=scene.pattern.length;
   return <section className={'driveScreen '+(world.theme==='forest'?'forestDrive':'cityDrive')}>
     <div className="driveStageWrap">
-      <WorldStage world={world} scene={scene} step={step} car={car} lane={lane} target={target} hitPulse={hitPulse}/>
+      <WorldStage world={world} scene={scene} step={step} car={car} lane={lane} target={done?undefined:target} hitPulse={hitPulse}/>
       <button className="driveHome" onClick={onHome} aria-label="Home">⌂</button>
       <div className="driveMission">
         <span>{scene.icon} {scene.title.toUpperCase()}</span>
@@ -283,7 +283,7 @@ function WorldStage({world,scene,step,car,lane,target,hitPulse}:any){
   return <div className={'worldStage driveWorld scene-'+scene.id+' '+(forest?'forestStage':'cityStage')}>
     <div className="worldSky"><div className={forest?'forestBack':'cityBack'}/></div>
     <div className="road3d movingRoad"><div className="roadDash"/></div>
-    {target!==undefined&&<div key={scene.id+'-'+step} className={'roadTarget target-'+target} style={{'--target':COLORS[target]}}><b>{NOTES[target]}</b></div>}
+    {target!==undefined&&<div key={scene.id+'-'+step} className="roadTarget" style={{'--target':COLORS[target],left:laneX[target]+'%'}}><b>{NOTES[target]}</b></div>}
 
     {scene.id==='lights'&&<div className="streetlights">{[0,1,2,3].map(i=><span key={i} className={i<step?'on':''}><i/></span>)}</div>}
     {scene.id==='bridge'&&<div className={'bridge '+(step>=2?'leftOpen ':'')+(step>=4?'rightOpen':'')}><span className="tower left"/><span className="deck left"/><span className="deck right"/><span className="tower right"/></div>}
@@ -309,7 +309,7 @@ function RaceScreen({pattern,step,car,lane,hitPulse,onKey,onHome}:any){
       <div className="worldStage driveWorld cityStage">
         <div className="worldSky"><div className="cityBack"/></div>
         <div className="road3d movingRoad fast"><div className="roadDash"/></div>
-        {!done&&<div key={'race-target-'+step} className={'roadTarget fastTarget target-'+target} style={{'--target':COLORS[target]}}><b>{NOTES[target]}</b></div>}
+        {!done&&<div key={'race-target-'+step} className="roadTarget fastTarget" style={{'--target':COLORS[target],left:laneX[target]+'%'}}><b>{NOTES[target]}</b></div>}
         <div key={'race-car-'+hitPulse+'-'+step} className="playerCar driveCar raceCar" style={{left:laneX[lane]+'%'}}><CarGraphic accent={car.accent}/><i className="carBoost"/></div>
       </div>
       <button className="driveHome" onClick={onHome} aria-label="Home">⌂</button>
