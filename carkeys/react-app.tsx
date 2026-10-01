@@ -302,7 +302,7 @@ function StoryIntro({world,completed,onStart,onBack,onGarage}:any){
 function PlayScreen({mode,world,scene,sceneIndex,step,phase,pulse,message,car,onKey,onHome,onGarage}:any){
   const memory=scene.memory;
   const next=NOTES[scene.pattern[Math.min(step,scene.pattern.length-1)]];
-  return <section className={'ckPlay theme-'+world.theme}>
+  return <section className={'ckPlay '+(mode==='twin'?'twinClean ':'')+'theme-'+world.theme}>
     <div className="gameHead"><KidLogo small/><button className="purpleGarage" onClick={onGarage}>🏠<small>Garage</small></button></div>
     <div className="missionBoard">
       <div className="missionPic">{scene.icon}</div>
@@ -315,7 +315,7 @@ function PlayScreen({mode,world,scene,sceneIndex,step,phase,pulse,message,car,on
       </div>
     </div>
     <div className="gameWorldWrap">
-      <button className="pauseOrb" onClick={onHome}>Ⅱ</button>
+      <button className="pauseOrb" aria-label="Home" onClick={onHome}>⌂</button>
       <div className="worldSign">{world.title}</div>
       <WorldStage key={world.id+'-'+scene.id} world={world} scene={scene} step={step} pulse={pulse} phase={phase} car={car}/>
     </div>
