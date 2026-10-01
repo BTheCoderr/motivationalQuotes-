@@ -790,3 +790,155 @@ button:active{transform:translateY(3px) scale(.985)}
   .twinClean .missionBoard{min-height:86px}
   .twinClean .keys{height:96px}
 }
+
+
+/* v26 — one game rule everywhere: see key -> tap key -> world reacts */
+.simpleAdventure{
+  width:min(760px,100%);
+  min-height:100svh;
+  margin:0 auto;
+  padding:8px;
+  display:grid!important;
+  grid-template-rows:104px minmax(0,1fr) 116px!important;
+  gap:8px;
+  background:linear-gradient(#38c9ff,#e9ffd7);
+}
+.simpleAdventure .gameHead,
+.simpleAdventure .purpleGarage,
+.simpleAdventure .worldSign,
+.simpleAdventure .raceMission,
+.simpleAdventure .missionBoard{display:none!important}
+
+.simpleMission{
+  min-height:104px;
+  background:#fffced;
+  border:5px solid #ffd133;
+  border-radius:26px;
+  box-shadow:0 6px 0 #d99623;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:7px 12px;
+  text-align:center;
+}
+.simpleMission h2{
+  margin:0 0 5px;
+  color:#163d80;
+  font-size:clamp(18px,5vw,27px);
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px
+}
+.simpleMission h2 span{font-size:1.05em}
+.simpleMission .tapPrompt{
+  min-width:155px;
+  min-height:43px;
+  font-size:19px;
+  padding:4px 15px;
+}
+.simpleMission .tapPrompt b{font-size:31px}
+.simpleMission .tapPrompt.success{
+  background:linear-gradient(#72ed42,#25bd40);
+  color:#fff;
+  text-shadow:0 2px 0 #16812e;
+  box-shadow:0 3px 0 #16812e
+}
+.simpleMission .progressDots{margin-top:6px;gap:7px}
+.simpleMission .progressDots i{width:18px;height:18px;border-width:2px}
+.simpleMission.free{min-height:72px;align-self:end}
+.simpleMission.free h2{font-size:24px;margin:0}
+
+.simpleAdventure .gameWorldWrap{
+  min-height:0;
+  position:relative
+}
+.simpleAdventure .ckWorld{
+  height:100%!important;
+  min-height:0!important;
+  border-radius:26px;
+  border-width:5px
+}
+.simpleAdventure .pauseOrb{
+  width:43px;
+  height:43px;
+  left:9px;
+  top:9px;
+  bottom:auto;
+  font-size:21px;
+  border-width:3px;
+  opacity:.9
+}
+.simpleAdventure .keys{
+  height:110px!important;
+  padding:5px!important;
+  gap:5px!important
+}
+.simpleAdventure .keys button{
+  height:94px!important;
+  border-radius:20px!important
+}
+.simpleAdventure .keys button span{
+  font-size:45px!important
+}
+
+/* Echo Tunnel is now just another tap-and-react mission, not a memory test. */
+.simpleAdventure .tunnel{
+  top:40%;
+  width:48%;
+  height:34%;
+  border-width:8px;
+  background:linear-gradient(#342d77,#18224e);
+  opacity:.92
+}
+.simpleAdventure .tunnel span{
+  border-width:4px;
+  opacity:.72
+}
+.simpleAdventure.scene-tunnel .playerCar{z-index:24}
+
+/* Reduce decorative noise during play. */
+.simpleAdventure .musicDecor{opacity:.55}
+.simpleAdventure .motionCoins{opacity:.72}
+.simpleAdventure .cityBack,
+.simpleAdventure .forestBack{filter:saturate(.92)}
+
+/* Garage is rewards only: car, name, unlock. */
+.simpleGarageV2 .garageCards{margin-top:4px}
+.simpleGarageV2 .carCard{min-height:285px}
+.simpleGarageV2 .carCard small{display:none!important}
+.simpleGarageV2 .cardCar{height:185px}
+.simpleGarageV2 .garageProgress{
+  margin:12px auto 0;
+  width:max-content;
+  background:#fff9;
+  border:3px solid #fff;
+  border-radius:999px;
+  padding:7px 14px;
+  box-shadow:0 4px 0 #6aa4bd55
+}
+
+/* Keep all child-facing motion soft. */
+.simpleAdventure .playerCar{
+  animation:carCruiseSoft 2.2s ease-in-out infinite alternate!important
+}
+.simpleAdventure .worldStage .playerCar{
+  animation:carNoteMove .5s cubic-bezier(.2,.8,.2,1),carCruiseSoft 2.2s .5s ease-in-out infinite alternate!important
+}
+
+@media(max-height:760px){
+  .simpleAdventure{
+    grid-template-rows:91px minmax(0,1fr) 101px!important;
+    padding:6px;
+    gap:6px
+  }
+  .simpleMission{min-height:91px;border-radius:22px}
+  .simpleMission h2{font-size:17px}
+  .simpleMission .tapPrompt{min-height:38px;font-size:17px}
+  .simpleMission .tapPrompt b{font-size:27px}
+  .simpleAdventure .keys{height:96px!important}
+  .simpleAdventure .keys button{height:82px!important}
+  .simpleAdventure .keys button span{font-size:39px!important}
+}
