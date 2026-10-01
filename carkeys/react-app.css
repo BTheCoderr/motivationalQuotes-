@@ -143,3 +143,354 @@ button:active{transform:translateY(3px)}
   .heroWorld{min-height:360px}.heroCopy h1{font-size:36px}.modeCard{min-height:115px}.miniModes button{min-height:60px}
   .worldStage{min-height:330px}.keys button{height:86px}.carGrid{grid-template-columns:1fr}.carCard{min-height:240px}
 }
+
+
+/* ======================================================
+   v30 CORE LOOP — one game, one rule: TAP -> DRIVE -> WIN
+   ====================================================== */
+
+/* Keep child-facing play full-screen and remove dashboard chrome. */
+.app.play,.app.race,.app.piano{padding-top:0!important}
+.app.play>.top,.app.race>.top,.app.piano>.top{display:none!important}
+.top .cloud{display:none!important}
+
+/* Home: one obvious Play button, supporting modes stay secondary. */
+.simpleCoreHome{padding-bottom:24px}
+.simpleCoreHome .heroWorld{
+  height:min(54vh,560px);
+  min-height:405px;
+  overflow:hidden
+}
+.simpleCoreHome .heroCopy{
+  top:8%;
+  left:7%;
+  right:7%;
+  text-align:center
+}
+.simpleCoreHome .heroCopy .kicker{font-size:9px}
+.simpleCoreHome .heroCopy h1{
+  font-size:clamp(46px,12vw,76px);
+  letter-spacing:-4px;
+  line-height:.82;
+  color:#fff;
+  text-shadow:0 5px 0 #1d62b2,0 9px 18px #16497d44
+}
+.simpleCoreHome .heroCopy p{
+  width:max-content;
+  max-width:90%;
+  margin:12px auto 0
+}
+.simpleCoreHome .heroRoad:before{
+  animation:homeRoadFlow 1.4s linear infinite
+}
+@keyframes homeRoadFlow{to{background-position-y:88px}}
+.simpleCoreHome .heroCar{
+  animation:homeDrive 1.7s ease-in-out infinite alternate
+}
+@keyframes homeDrive{
+  from{transform:translateX(-50%) scale(1.4) translateY(3px) rotate(-.5deg)}
+  to{transform:translateX(-50%) scale(1.42) translateY(-6px) rotate(.5deg)}
+}
+.coreMenu{
+  width:min(700px,100%);
+  margin:-2px auto 0;
+  display:flex;
+  flex-direction:column;
+  gap:10px
+}
+.corePlay{
+  min-height:86px;
+  width:100%;
+  border:5px solid #fff;
+  border-radius:27px;
+  background:linear-gradient(#6fec45,#25bd41);
+  color:#fff;
+  display:grid;
+  grid-template-columns:58px 1fr;
+  align-items:center;
+  gap:10px;
+  padding:9px 15px;
+  text-align:left;
+  box-shadow:0 7px 0 #11822f,0 13px 22px #145d3440
+}
+.corePlay>span{
+  width:53px;height:53px;border-radius:50%;
+  display:grid;place-items:center;
+  background:#fff;color:#3bc848;
+  font-size:25px;
+  box-shadow:0 4px 0 #d6ead3
+}
+.corePlay b{display:block;font-size:25px;line-height:.9;text-shadow:0 2px 0 #16772c}
+.corePlay small{display:block;margin-top:5px;font-size:10px;color:#eaffdf;font-weight:800}
+.coreModes{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.coreModes button{
+  min-height:72px;
+  border:4px solid #fff;
+  border-radius:20px;
+  color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;
+  box-shadow:0 5px 0 #153f7d55
+}
+.coreModes button:nth-child(1){background:linear-gradient(#ff718f,#ef4167)}
+.coreModes button:nth-child(2){background:linear-gradient(#ff9a42,#ed612d)}
+.coreModes button:nth-child(3){background:linear-gradient(#4bc6ff,#1878dc)}
+.coreModes button:nth-child(4){background:linear-gradient(#a962f1,#7134d8)}
+.coreModes span{font-size:22px}.coreModes b{font-size:9px}
+.corePlay:active,.coreModes button:active{transform:translateY(3px) scale(.98)}
+
+/* Universal driving screen. */
+.driveScreen{
+  width:min(760px,100%);
+  height:100svh;
+  margin:0 auto;
+  padding:7px;
+  display:grid;
+  grid-template-rows:minmax(0,1fr) 108px;
+  gap:7px;
+  background:linear-gradient(#36c9ff,#dff8ff 74%,#eaffd7);
+  overflow:hidden
+}
+.driveStageWrap{
+  position:relative;
+  min-height:0;
+  overflow:hidden
+}
+.driveWorld{
+  width:100%;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  border-radius:27px;
+  border:5px solid #fff;
+  box-shadow:0 7px 0 #4d91ad55,0 13px 24px #285e7c2c;
+  background:linear-gradient(#46ceff 0 45%,#a9ebff 46% 50%,#63d658 51% 65%,#50b943 66%);
+  overflow:hidden
+}
+.driveWorld .worldSky{position:absolute;inset:0}
+.driveWorld .stars{display:none}
+.driveWorld .cityBack{top:22%;height:34%;opacity:.8}
+.driveWorld .forestBack{top:24%;height:39%;opacity:.9}
+
+/* Continuous road movement makes the car feel alive even before a tap. */
+.driveWorld .road3d{
+  left:7%;
+  right:7%;
+  bottom:-8%;
+  height:60%;
+  clip-path:polygon(39% 0,61% 0,100% 100%,0 100%);
+  background:#6f84a1;
+  border-top:4px solid #fff;
+  overflow:hidden
+}
+.driveWorld .road3d:before{display:none}
+.driveWorld .movingRoad:after{
+  content:"";
+  position:absolute;
+  left:49%;
+  top:-30%;
+  bottom:-20%;
+  width:2.8%;
+  background:repeating-linear-gradient(#fff 0 26px,transparent 26px 56px);
+  animation:roadDrive 1.25s linear infinite
+}
+.driveWorld .movingRoad.fast:after{animation-duration:.62s}
+@keyframes roadDrive{to{background-position-y:112px}}
+.driveWorld .roadDash{
+  position:absolute;
+  left:8%;right:8%;
+  top:0;bottom:0;
+  background:
+    linear-gradient(90deg,#ffffff66 0 1.2%,transparent 1.2% 98.8%,#ffffff66 98.8%),
+    linear-gradient(90deg,transparent 24%,#ffffff24 24% 24.5%,transparent 24.5% 49.5%,#ffffff24 49.5% 50%,transparent 50% 74.5%,#ffffff24 74.5% 75%,transparent 75%);
+}
+
+/* The next note actually travels down the road instead of sitting in a dashboard. */
+.roadTarget{
+  --target:#ffd43d;
+  position:absolute;
+  z-index:16;
+  left:50%;
+  top:42%;
+  width:54px;height:54px;
+  margin-left:-27px;
+  border-radius:50%;
+  border:5px solid #fff;
+  background:var(--target);
+  color:#fff;
+  display:grid;place-items:center;
+  box-shadow:0 5px 0 #193c7750,0 0 23px color-mix(in srgb,var(--target) 60%,transparent);
+  animation:targetApproach 2.35s linear infinite;
+  pointer-events:none
+}
+.roadTarget b{font-size:27px;text-shadow:0 3px 0 #0003}
+.roadTarget.target-0{--lane-shift:-37%}
+.roadTarget.target-1{--lane-shift:-13%}
+.roadTarget.target-2{--lane-shift:13%}
+.roadTarget.target-3{--lane-shift:37%}
+.fastTarget{animation-duration:1.45s}
+@keyframes targetApproach{
+  0%{transform:translate(var(--lane-shift),-12px) scale(.46);opacity:.25}
+  25%{opacity:1}
+  72%{transform:translate(calc(var(--lane-shift) * 1.45),150px) scale(.92);opacity:1}
+  100%{transform:translate(calc(var(--lane-shift) * 1.8),255px) scale(1.25);opacity:0}
+}
+
+/* The selected key steers the car to a lane. Correct hits also remount into a boost pop. */
+.driveCar{
+  bottom:2.5%!important;
+  z-index:24!important;
+  transform:translateX(-50%) scale(1.02)!important;
+  transition:left .24s cubic-bezier(.2,.85,.2,1);
+  animation:carHit .36s ease-out,carIdle 1.65s .36s ease-in-out infinite alternate!important;
+  will-change:left,transform
+}
+.driveCar .carArt{width:190px!important;height:160px!important;animation:none!important}
+@keyframes carHit{
+  0%{transform:translateX(-50%) translateY(0) scale(1)}
+  45%{transform:translateX(-50%) translateY(-12px) scale(1.07)}
+  100%{transform:translateX(-50%) translateY(0) scale(1.02)}
+}
+@keyframes carIdle{
+  from{transform:translateX(-50%) translateY(1px) rotate(-.35deg) scale(1.02)}
+  to{transform:translateX(-50%) translateY(-4px) rotate(.35deg) scale(1.035)}
+}
+.carBoost{
+  position:absolute;
+  left:50%;
+  bottom:9%;
+  width:42px;height:65px;
+  transform:translateX(-50%);
+  background:radial-gradient(ellipse at 50% 0,#fff 0 14%,#78eaff 15% 33%,#347dff88 34% 53%,transparent 54%);
+  filter:blur(2px);
+  opacity:0;
+  animation:boostFlash .38s ease-out
+}
+@keyframes boostFlash{
+  0%{opacity:.9;transform:translateX(-50%) scale(.6)}
+  100%{opacity:0;transform:translateX(-50%) translateY(25px) scale(1.35)}
+}
+
+/* Mission = one small instruction, not a separate menu. */
+.driveMission{
+  position:absolute;
+  z-index:35;
+  left:50%;
+  top:11px;
+  transform:translateX(-50%);
+  width:min(80%,360px);
+  min-height:82px;
+  padding:8px 11px;
+  background:#fffcecf2;
+  border:4px solid #ffd037;
+  border-radius:22px;
+  box-shadow:0 5px 0 #da9825;
+  text-align:center
+}
+.driveMission>span{display:block;color:#396b9e;font-size:9px;font-weight:1000}
+.driveMission>b{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:130px;
+  min-height:36px;
+  margin-top:4px;
+  padding:3px 12px;
+  border-radius:999px;
+  border:3px solid #fff;
+  background:linear-gradient(#ffe95b,#ffc82f);
+  color:#173a79;
+  box-shadow:0 3px 0 #db9824;
+  font-size:16px
+}
+.driveMission>b.done{background:linear-gradient(#6fea43,#25b941);color:#fff}
+.driveMission em{font-style:normal;color:#ff3f83;font-size:27px;margin-left:5px}
+.driveMission .progressDots{margin-top:5px;gap:6px}
+.driveMission .progressDots i{width:15px;height:15px;border-width:2px}
+.driveMission.free{min-height:56px;width:auto;min-width:180px}
+.driveMission.free>b{background:none;border:0;box-shadow:none;margin-top:1px;min-height:0;padding:0;font-size:14px}
+
+.driveHome{
+  position:absolute;
+  z-index:40;
+  left:10px;
+  bottom:10px;
+  width:43px;height:43px;
+  border-radius:50%;
+  border:3px solid #fff;
+  background:linear-gradient(#49baff,#1871da);
+  color:#fff;
+  font-size:20px;
+  font-weight:1000;
+  box-shadow:0 4px 0 #0c4e9d
+}
+
+/* The four keys are the controller. Nothing else competes with them. */
+.driveScreen .keys{
+  height:103px;
+  padding:5px;
+  gap:5px;
+  border-radius:23px;
+  border-width:4px;
+  box-shadow:0 6px 0 #0b4b9c
+}
+.driveScreen .keys button{
+  height:88px;
+  border-width:3px;
+  border-radius:19px;
+  transition:transform .1s ease,filter .12s ease,box-shadow .12s ease
+}
+.driveScreen .keys button span{font-size:43px}
+.driveScreen .keys button small{display:none!important}
+.driveScreen .keys button:active{
+  transform:translateY(5px) scale(.96);
+  filter:brightness(1.08)
+}
+.driveScreen .keys button.hint{
+  outline:5px solid #fff75c;
+  outline-offset:-1px;
+  animation:keyGlow .9s ease-in-out infinite
+}
+@keyframes keyGlow{50%{filter:brightness(1.13);box-shadow:inset 0 -8px 0 #0001,0 7px 0 #0002,0 0 18px #fff75c}}
+.driveScreen .keys.disabled{opacity:.6}
+
+/* World reactions stay visible but behind the driving cue. */
+.driveWorld .streetlights{z-index:10}
+.driveWorld .bridge{z-index:10}
+.driveWorld .tunnel{z-index:10}
+.driveWorld .restoreCity{z-index:10}
+.driveWorld .forestScene{z-index:10}
+.driveWorld .streetlights span.on:before{animation:lampWin .45s ease-out}
+@keyframes lampWin{50%{transform:translateX(-50%) scale(1.3)}}
+
+/* Reward-only garage. */
+.cleanRewardGarage .garageTitle p,
+.cleanRewardGarage .carCard em,
+.cleanRewardGarage .paintBar{display:none!important}
+.cleanRewardGarage .carCard{min-height:245px}
+.cleanRewardGarage .carCard small{font-size:9px}
+.cleanRewardGarage .carCardArt{height:155px}
+
+/* On small phones keep the road large and the mission compact. */
+@media(max-width:720px){
+  .driveScreen{grid-template-rows:minmax(0,1fr) 99px;padding:6px;gap:6px}
+  .driveWorld{border-radius:23px}
+  .driveMission{top:8px;min-height:72px;padding:6px 9px}
+  .driveMission>b{min-height:32px;font-size:15px}
+  .driveMission em{font-size:24px}
+  .driveMission .progressDots{margin-top:4px}
+  .driveMission .progressDots i{width:13px;height:13px}
+  .driveScreen .keys{height:94px}
+  .driveScreen .keys button{height:80px}
+  .driveScreen .keys button span{font-size:39px}
+  .driveCar .carArt{width:165px!important;height:145px!important}
+  .roadTarget{width:48px;height:48px;margin-left:-24px}
+  .roadTarget b{font-size:24px}
+  .simpleCoreHome .heroWorld{height:47vh;min-height:350px}
+  .coreModes button{min-height:64px}
+}
+@media(max-width:390px){
+  .coreModes{grid-template-columns:repeat(2,1fr)}
+  .coreModes button{min-height:58px;flex-direction:row;gap:6px}
+  .driveCar .carArt{width:150px!important;height:132px!important}
+}
