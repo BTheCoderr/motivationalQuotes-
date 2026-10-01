@@ -141,7 +141,7 @@ function App(){
   function startStory(mode:PlayMode,targetWorld=0,targetScene=0){
     clearTimers();setPlayMode(mode);setWorldIndex(targetWorld);setSceneIndex(targetScene);setStep(0);setMemoryPhase('idle');setPulse(-1);setMessage('');setScreen('play');
     saveProgress(prev=>prev.completedWorlds.includes(WORLDS[targetWorld].id)?prev:{...prev,started:true,world:targetWorld,scene:targetScene,mode});
-    startBeat(mode);introMusic(mode);
+    startBeat(mode);
     setDriveLane(1);
     later(()=>beginScene(targetScene,mode,targetWorld),320);
   }
@@ -195,7 +195,7 @@ function App(){
   }
   const racePattern=useMemo(()=>[0,1,2,3,1,2,0,3],[]);
 
-  function startRace(){clearTimers();setDriveLane(1);setRaceStep(0);setRaceScore(0);setRaceCombo(0);setResultKind('race');setScreen('race');startBeat('race');introMusic('race')}
+  function startRace(){clearTimers();setDriveLane(1);setRaceStep(0);setRaceScore(0);setRaceCombo(0);setResultKind('race');setScreen('race');startBeat('race')}
   function hitRace(lane:number){
     setDriveLane(lane);setHitPulse((v:number)=>v+1);playNote(lane);
     try{(navigator as any).vibrate?.(14)}catch{}
@@ -203,6 +203,7 @@ function App(){
     if(lane!==want){setRaceCombo(0);return}
     drum('kick');
     const next=raceStep+1;setRaceStep(next);setRaceScore((v:number)=>v+100+(raceCombo*10));setRaceCombo((v:number)=>v+1);
+    if(next<racePattern.length)later(()=>playNote(racePattern[next],true),120);
     if(next>=racePattern.length){
       jingle(true);
       later(()=>{stopBeat();setCoins((v:number)=>v+50);saveProgress(prev=>({...prev,races:prev.races+1}));setResultKind('race');setResultNextWorld(null);setScreen('results')},600);
