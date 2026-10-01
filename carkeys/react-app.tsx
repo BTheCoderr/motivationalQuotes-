@@ -233,19 +233,43 @@ function TopBar({coins,stars,backend,onHome,compact}:any){
 
 function Home({coins,progress,hasContinue,continueWorld,continueScene,onContinue,onTwin,onStory,onRace,onPiano,onGarage}:any){
   const primary=hasContinue?onContinue:onTwin;
-  return <section className="artScreen homeArtScreen">
-    <div className="artCanvas homeArtCanvas">
-      <img className="screenArt" src="/assets/ui/home.webp" alt="" draggable="false"/>
-      <span className="artCount starCount">{progress.stars}</span>
-      <span className="artCount coinCount">{coins}</span>
-      <button className="artHotspot settingsSpot" aria-label="Settings" onClick={()=>{}} />
-      <button className="artHotspot continueSpot" aria-label={hasContinue?'Continue Adventure':'Play'} onClick={primary} />
-      <button className="artHotspot twinSpot" aria-label="Twin Mode" onClick={onTwin} />
-      <button className="artHotspot storySpot" aria-label="Story Mode" onClick={onStory} />
-      <button className="artHotspot raceSpot" aria-label="Race" onClick={onRace} />
-      <button className="artHotspot pianoSpot" aria-label="Piano Play" onClick={onPiano} />
-      <button className="artHotspot garageSpot" aria-label="Garage" onClick={onGarage} />
-      {!hasContinue&&<div className="firstPlayPatch">PLAY</div>}
+  return <section className="liveHome">
+    <div className="liveHero">
+      <div className="homeHud">
+        <span>⭐ {progress.stars}</span>
+        <span>🪙 {coins}</span>
+      </div>
+
+      <div className="liveCloud c1"/><div className="liveCloud c2"/>
+      <KidLogo/>
+
+      <div className="liveCity">
+        <i/><i/><i/><i/><i/><i/><i/>
+      </div>
+
+      <div className="liveRoad">
+        <div className="roadStripe"/>
+        <div className="roadEdge left"/><div className="roadEdge right"/>
+      </div>
+
+      <div className="liveNotes"><i>♪</i><i>★</i><i>♫</i><i>🪙</i><i>♪</i></div>
+      <div className="liveCar"><CarGraphic accent="#23a8ff"/></div>
+
+      <button className="livePrimary" onClick={primary}>
+        <span>▶</span>
+        <div>
+          <b>{hasContinue?'CONTINUE':'PLAY'}</b>
+          <small>{hasContinue?continueScene.title:'Start the adventure'}</small>
+        </div>
+      </button>
+    </div>
+
+    <div className="liveModes">
+      <button className="liveMode twin" onClick={onTwin}><span>⭐</span><b>TWIN</b></button>
+      <button className="liveMode story" onClick={onStory}><span>📖</span><b>STORY</b></button>
+      <button className="liveMode race" onClick={onRace}><span>🏁</span><b>RACE</b></button>
+      <button className="liveMode piano" onClick={onPiano}><span>🎹</span><b>PIANO</b></button>
+      <button className="liveMode garage" onClick={onGarage}><span>🚗</span><b>GARAGE</b></button>
     </div>
   </section>
 }
