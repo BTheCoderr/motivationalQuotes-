@@ -5,7 +5,7 @@ declare namespace JSX { interface IntrinsicElements { [elemName: string]: any } 
 const {useEffect,useMemo,useRef,useState}=React;
 const NOTES=['C','D','E','F'];
 const FREQ=[261.63,293.66,329.63,349.23];
-const COLORS=['#53e7ff','#bfff5b','#ffd45d','#ff6cc8'];
+const COLORS=['#ff4f88','#ffd43d','#54d846','#9a4cf1'];
 const CARS=[
   {id:'starter',name:'Starter Coupe',unlock:'Ready',accent:'#23a8ff',image:'/assets/cars/starter.webp',rarity:'COMMON',speed:48,boost:42},
   {id:'neon',name:'Neon Runner',unlock:'Finish 1 race',accent:'#8b35ff',image:'/assets/cars/neon.webp',rarity:'RARE',speed:66,boost:70},
@@ -21,7 +21,7 @@ const WORLDS=[
     scenes:[
       {id:'lights',title:'Wake the Streetlights',icon:'💡',pattern:[0,0,0,0],line:"Let's wake the lights.",success:'Whoa... the lights are waking up!'},
       {id:'bridge',title:'Open the Bridge',icon:'🌉',pattern:[0,1,0,1],line:'The bridge needs our rhythm.',success:'Nice! The bridge is open!'},
-      {id:'tunnel',title:'Echo Tunnel',icon:'🔊',pattern:[0,1,2,1],memory:true,line:'Shh... listen.',success:'You got the echo!'},
+      {id:'tunnel',title:'Echo Tunnel',icon:'🔊',pattern:[0,1,2,1],line:'Shh... listen.',success:'You got the echo!'},
       {id:'home',title:'Bring Music Home',icon:'✨',pattern:[0,1,2,3],line:'One more melody. Bring the music home!',success:'Look! The whole city is singing!'},
     ]
   },
@@ -33,7 +33,7 @@ const WORLDS=[
     scenes:[
       {id:'rabbit',title:'Rabbit Steps',icon:'🐇',pattern:[0,0,1,1],line:'Rabbit needs the beat.',success:'There he goes! Two and two!'},
       {id:'woodpecker',title:'Woodpecker Workshop',icon:'🐦',pattern:[2,2,2,2],line:"Let's fix the parade sign.",success:'Four clean knocks!'},
-      {id:'owl',title:'Owl Says',icon:'🦉',pattern:[0,2,1,2],memory:true,line:'Shh... Owl has a rhythm.',success:"You got Owl's rhythm!"},
+      {id:'owl',title:'Owl Says',icon:'🦉',pattern:[0,2,1,2],line:'Shh... Owl has a rhythm.',success:"You got Owl's rhythm!"},
       {id:'parade',title:'Moonlight Parade',icon:'🦊',pattern:[0,0,1,2,2,3],line:"Let's start the parade!",success:'The whole forest is moving!'},
     ]
   }
@@ -78,10 +78,10 @@ function drum(type:'kick'|'hat'|'snare'){try{
   const src=a.createBufferSource(),g=a.createGain(),f=a.createBiquadFilter();src.buffer=buf;f.type='highpass';f.frequency.value=type==='snare'?1700:4800;g.gain.value=type==='snare'?.045:.022;src.connect(f).connect(g).connect(a.destination);src.start();
 }catch{}}
 function pace(mode:'twin'|'story'|'race'|'piano'='race'){
-  if(mode==='twin')return {beat:470,intro:390,sceneCue:360,memory:760,listenDelay:850,clearDelay:2100};
-  if(mode==='story')return {beat:390,intro:320,sceneCue:280,memory:650,listenDelay:650,clearDelay:1750};
-  if(mode==='piano')return {beat:430,intro:340,sceneCue:300,memory:650,listenDelay:650,clearDelay:1700};
-  return {beat:330,intro:280,sceneCue:240,memory:580,listenDelay:550,clearDelay:1500};
+  if(mode==='twin')return {beat:520,intro:300,sceneCue:260,memory:650,listenDelay:450,clearDelay:900};
+  if(mode==='story')return {beat:440,intro:260,sceneCue:230,memory:620,listenDelay:400,clearDelay:760};
+  if(mode==='piano')return {beat:460,intro:260,sceneCue:230,memory:620,listenDelay:400,clearDelay:760};
+  return {beat:360,intro:230,sceneCue:210,memory:560,listenDelay:350,clearDelay:650};
 }
 function startBeat(mode:'twin'|'story'|'race'|'piano'='race'){
   stopBeat();let i=0;const p=pace(mode);
@@ -105,6 +105,8 @@ function App(){
   const [raceStep,setRaceStep]=useState(0);
   const [raceScore,setRaceScore]=useState(0);
   const [raceCombo,setRaceCombo]=useState(0);
+  const [driveLane,setDriveLane]=useState(1);
+  const [hitPulse,setHitPulse]=useState(0);
   const [backend,setBackend]=useState('checking' as 'checking'|'online'|'offline');
   const [progress,setProgress]=useState(loadProgress);
   const [resultKind,setResultKind]=useState('story' as 'story'|'race');
@@ -140,16 +142,15 @@ function App(){
     clearTimers();setPlayMode(mode);setWorldIndex(targetWorld);setSceneIndex(targetScene);setStep(0);setMemoryPhase('idle');setPulse(-1);setMessage('');setScreen('play');
     saveProgress(prev=>prev.completedWorlds.includes(WORLDS[targetWorld].id)?prev:{...prev,started:true,world:targetWorld,scene:targetScene,mode});
     startBeat(mode);introMusic(mode);
-    speak(targetWorld===0?"Ready? Let's bring the music back.":"Ready? Let's find the forest beat.");
-    later(()=>beginScene(targetScene,mode,targetWorld),mode==='twin'?1550:1200);
+    setDriveLane(1);
+    later(()=>beginScene(targetScene,mode,targetWorld),320);
   }
   function continueAdventure(){startStory(progress.mode,progress.world,progress.scene)}
   function beginScene(index:number,mode=playMode,targetWorld=worldIndex){
-    clearTimers();setWorldIndex(targetWorld);setSceneIndex(index);setStep(0);setPulse(-1);setMessage('');
+    clearTimers();setWorldIndex(targetWorld);setSceneIndex(index);setStep(0);setPulse(-1);setMessage('');setMemoryPhase('idle');
     saveProgress(prev=>prev.completedWorlds.includes(WORLDS[targetWorld].id)?prev:{...prev,started:true,world:targetWorld,scene:index,mode});
-    const s=WORLDS[targetWorld].scenes[index],p=pace(mode);
-    if(s.memory){setMemoryPhase('listen');speak(s.line);later(()=>playMemory(s,mode),p.listenDelay)}
-    else{setMemoryPhase('idle');s.pattern.forEach((n:number,i:number)=>later(()=>playNote(n,true),i*p.sceneCue));later(()=>speak(s.line),mode==='twin'?300:220)}
+    const s=WORLDS[targetWorld].scenes[index];
+    later(()=>playNote(s.pattern[0],true),180);
   }
   function playMemory(s:any,mode:PlayMode=playMode){
     const p=pace(mode);setMemoryPhase('listen');setStep(0);
@@ -178,58 +179,75 @@ function App(){
     later(()=>{setScreen('results');stopBeat()},pace(playMode).clearDelay);
   }
   function hitStory(lane:number){
-    if(screen!=='play')return;playNote(lane);if(scene.memory&&memoryPhase!=='copy')return;
-    const want=scene.pattern[step];
+    if(screen!=='play')return;
+    setDriveLane(lane);setHitPulse((v:number)=>v+1);playNote(lane);
+    try{(navigator as any).vibrate?.(18)}catch{}
+    const want=scene.pattern[Math.min(step,scene.pattern.length-1)];
     if(lane!==want){
-      setMessage(scene.memory?'HEAR IT AGAIN':'TRY '+NOTES[want]);
-      if(scene.memory){setMemoryPhase('listen');later(()=>playMemory(scene,playMode),playMode==='twin'?750:500)}
+      setMessage('TRY '+NOTES[want]);
+      later(()=>setMessage(''),420);
       return;
     }
-    const next=step+1;setStep(next);setMessage('');
+    drum('kick');
+    const next=step+1;setStep(next);setMessage(next>=scene.pattern.length?'NICE! ⭐':'');
+    if(next<scene.pattern.length)later(()=>playNote(scene.pattern[next],true),150);
     if(next>=scene.pattern.length)completeScene();
   }
-  const racePattern=useMemo(()=>[0,1,2,3,1,2,0,3,2,1,0,0,2,3,1,3],[]);
+  const racePattern=useMemo(()=>[0,1,2,3,1,2,0,3],[]);
+
   function startRace(){clearTimers();setRaceStep(0);setRaceScore(0);setRaceCombo(0);setResultKind('race');setScreen('race');startBeat('race');introMusic('race')}
   function hitRace(lane:number){
-    playNote(lane);const want=racePattern[raceStep%racePattern.length];
-    if(lane===want){
-      const next=raceStep+1;setRaceStep(next);setRaceScore((v:number)=>v+100+(raceCombo*10));setRaceCombo((v:number)=>v+1);
-      if(next>=racePattern.length){
-        jingle(true);later(()=>{stopBeat();setCoins((v:number)=>v+50);saveProgress(prev=>({...prev,races:prev.races+1}));setResultKind('race');setResultNextWorld(null);setScreen('results')},800);
-      }
-    }else setRaceCombo(0);
+    setDriveLane(lane);setHitPulse((v:number)=>v+1);playNote(lane);
+    try{(navigator as any).vibrate?.(14)}catch{}
+    const want=racePattern[Math.min(raceStep,racePattern.length-1)];
+    if(lane!==want){setRaceCombo(0);return}
+    drum('kick');
+    const next=raceStep+1;setRaceStep(next);setRaceScore((v:number)=>v+100+(raceCombo*10));setRaceCombo((v:number)=>v+1);
+    if(next>=racePattern.length){
+      jingle(true);
+      later(()=>{stopBeat();setCoins((v:number)=>v+50);saveProgress(prev=>({...prev,races:prev.races+1}));setResultKind('race');setResultNextWorld(null);setScreen('results')},600);
+    }
   }
 
-  function pianoHit(lane:number){playNote(lane);drum('hat')}
-  function openWorldStory(i:number){setWorldIndex(i);setSceneIndex(0);setScreen('story')}
+  function pianoHit(lane:number){setDriveLane(lane);setHitPulse((v:number)=>v+1);playNote(lane);drum('hat')}
+  function openWorldStory(i:number){startStory('story',i,0)}
   function continueAfterResult(){if(resultKind==='story'&&resultNextWorld!==null){startStory(playMode,resultNextWorld,0);return}setScreen('map')}
 
   return <main className={'app '+screen}>
     <TopBar coins={coins} stars={progress.stars} backend={backend} onHome={goHome} compact={screen!=='home'} />
     {screen==='home'&&<Home progress={progress} hasContinue={hasContinue} continueWorld={continueWorld} continueScene={continueScene} onContinue={continueAdventure} onTwin={()=>startStory('twin',0,0)} onStory={()=>setScreen('map')} onRace={startRace} onPiano={()=>{setScreen('piano');startBeat('piano')}} onGarage={()=>setScreen('garage')} />}
     {screen==='map'&&<WorldMap progress={progress} onWorld={openWorldStory} onBack={goHome} />}
-    {screen==='story'&&<StoryIntro world={world} completed={progress.completedWorlds.includes(world.id)} onStart={()=>startStory('story',worldIndex,0)} onBack={()=>setScreen('map')} />}
-    {screen==='play'&&<PlayScreen mode={playMode} world={world} scene={scene} sceneIndex={sceneIndex} step={step} phase={memoryPhase} pulse={pulse} message={message} car={car} onKey={hitStory} onHome={goHome} />}
-    {screen==='race'&&<RaceScreen pattern={racePattern} step={raceStep} score={raceScore} combo={raceCombo} car={car} onKey={hitRace} onHome={goHome} />}
-    {screen==='piano'&&<PianoScreen onKey={pianoHit} onHome={goHome} />}
+    {screen==='play'&&<PlayScreen mode={playMode} world={world} scene={scene} sceneIndex={sceneIndex} step={step} message={message} car={car} lane={driveLane} hitPulse={hitPulse} onKey={hitStory} onHome={goHome} />}
+    {screen==='race'&&<RaceScreen pattern={racePattern} step={raceStep} car={car} lane={driveLane} hitPulse={hitPulse} onKey={hitRace} onHome={goHome} />}
+    {screen==='piano'&&<PianoScreen car={car} lane={driveLane} hitPulse={hitPulse} onKey={pianoHit} onHome={goHome} />}
     {screen==='garage'&&<Garage selected={selectedCar} stars={progress.stars} races={progress.races} onSelect={setSelectedCar} onBack={goHome} />}
     {screen==='results'&&<Results kind={resultKind} world={WORLDS[resultWorld]} nextWorld={resultNextWorld===null?null:WORLDS[resultNextWorld]} mode={playMode} onContinue={continueAfterResult} onAgain={()=>resultKind==='race'?startRace():startStory(playMode,resultWorld,0)} onHome={goHome} />}
   </main>
 }
 
 function TopBar({coins,stars,backend,onHome,compact}:any){
-  return <header className={'top '+(compact?'compact':'')}><button className="brand" onClick={onHome} aria-label="CarKeys home"><span className="logoNote">♪</span><span className="brandWord">CarKeys</span></button><div className="topMeta"><span className={'cloud '+backend}>● {backend==='online'?'READY':backend==='checking'?'CONNECTING':'OFFLINE'}</span><span className="starsMeta">⭐ {stars}</span><span className="coins">🪙 {coins}</span></div></header>
+  return <header className={'top '+(compact?'compact':'')}><button className="brand" onClick={onHome} aria-label="CarKeys home"><span className="logoNote">♪</span><span className="brandWord">CarKeys</span></button><div className="topMeta"><span className="starsMeta">⭐ {stars}</span><span className="coins">🪙 {coins}</span></div></header>
 }
+
 function Home({progress,hasContinue,continueWorld,continueScene,onContinue,onTwin,onStory,onRace,onPiano,onGarage}:any){
-  return <section className="homeScreen"><div className="heroWorld"><div className="moon"/><div className="skyline"/><div className="heroRoad"><div className="lane l1"/><div className="lane l2"/><div className="lane l3"/><div className="heroCar"><CarGraphic accent="#53e7ff"/></div></div><div className="heroCopy"><span className="kicker">MUSIC POWERS THE ROAD</span><h1>DRIVE THE<br/><em>ADVENTURE.</em></h1><p>Play the keys. Change the world.</p></div></div>
-    <div className="modeDock">
-      {hasContinue&&<button className="continueCard" onClick={onContinue}><span>▶</span><div><b>CONTINUE ADVENTURE</b><small>{continueWorld.icon} {continueWorld.title} · {continueScene.title}</small></div><i>KEEP GOING →</i></button>}
-      <button className="modeCard twinCard" onClick={onTwin}><span className="modeIcon">⭐</span><b>TWIN MODE</b><small>One thing at a time</small><i>START FRESH →</i></button>
-      <button className="modeCard storyCard" onClick={onStory}><span className="modeIcon">📖</span><b>STORY</b><small>{progress.completedWorlds.length}/{WORLDS.length} worlds complete · {progress.stars} ★</small><i>EXPLORE →</i></button>
-      <div className="miniModes"><button onClick={onRace}>🏁 <b>Race</b></button><button onClick={onPiano}>🎹 <b>Piano Play</b></button><button onClick={onGarage}>🚗 <b>Garage</b></button></div>
+  return <section className="homeScreen simpleCoreHome">
+    <div className="heroWorld">
+      <div className="moon"/><div className="skyline"/>
+      <div className="heroRoad"><div className="lane l1"/><div className="lane l2"/><div className="lane l3"/><div className="heroCar"><CarGraphic accent="#23a8ff"/></div></div>
+      <div className="heroCopy"><span className="kicker">MUSIC POWERS THE CAR</span><h1>CARKEYS</h1><p>Tap the keys. Drive the adventure.</p></div>
+    </div>
+    <div className="coreMenu">
+      <button className="corePlay" onClick={hasContinue?onContinue:onTwin}><span>▶</span><div><b>{hasContinue?'KEEP PLAYING':'PLAY'}</b><small>{hasContinue?continueScene.title:'Easy adventure for Twin'}</small></div></button>
+      <div className="coreModes">
+        <button onClick={onStory}><span>🗺️</span><b>STORY ROAD</b></button>
+        <button onClick={onRace}><span>🏁</span><b>RACE</b></button>
+        <button onClick={onPiano}><span>🎹</span><b>JUST PLAY</b></button>
+        <button onClick={onGarage}><span>🚗</span><b>GARAGE</b></button>
+      </div>
     </div>
   </section>
 }
+
 function WorldMap({progress,onWorld,onBack}:any){
   const cityDone=progress.completedWorlds.includes('city'),forestDone=progress.completedWorlds.includes('forest');
   return <section className="panelScreen"><button className="back" onClick={onBack}>← HOME</button><div className="mapHeader"><span>STORY ROAD</span><h2>KEEP THE ADVENTURE GOING.</h2><p>{progress.stars} ★ earned · progress saves automatically</p></div><div className="worldPath">
@@ -242,43 +260,94 @@ function WorldMap({progress,onWorld,onBack}:any){
 function StoryIntro({world,completed,onStart,onBack}:any){
   return <section className={'storyIntro theme-'+world.theme}><button className="back" onClick={onBack}>← MAP</button><div className="storyPoster"><div className="storySky"><span className="bigCity">{world.icon}</span><span className="floatingNote n1">♪</span><span className="floatingNote n2">♫</span></div><div className="storyText"><span>STORY {String(world.number).padStart(2,'0')} {completed?'· COMPLETE':''}</span><h2>{world.storyTitle.toUpperCase()}</h2><p>{world.intro}</p><div className="chapterStrip">{world.scenes.map((s:any,i:number)=><span key={s.id}>{s.icon}<small>{i+1}</small></span>)}</div><button className="cta" onClick={onStart}>{completed?'REPLAY THE STORY':'START THE ADVENTURE'} →</button></div></div></section>
 }
-function PlayScreen({mode,world,scene,sceneIndex,step,phase,pulse,message,car,onKey,onHome}:any){
-  const memory=scene.memory;
-  return <section className={'gameScreen theme-'+world.theme}><div className="mission"><span>{world.icon} {mode==='twin'?'TWIN MODE':world.title.toUpperCase()} · {sceneIndex+1}/{world.scenes.length}</span><h2>{scene.title}</h2>{memory?<><div className={'stateChip '+phase}>{phase==='listen'?'👂 LISTEN':'🎹 COPY IT!'}</div><ProgressDots total={scene.pattern.length} step={step} pulse={pulse} listening={phase==='listen'} /></>:<><div className="oneAction">{message||<>TAP <b>{NOTES[scene.pattern[Math.min(step,scene.pattern.length-1)]]}</b></>}</div><ProgressDots total={scene.pattern.length} step={step}/></>}</div><WorldStage world={world} scene={scene} step={step} pulse={pulse} phase={phase} car={car}/><PianoKeys onKey={onKey} disabled={memory&&phase==='listen'} highlight={!memory?scene.pattern[Math.min(step,scene.pattern.length-1)]:-1}/><button className="smallHome" onClick={onHome}>⌂</button></section>
+function PlayScreen({mode,world,scene,sceneIndex,step,message,car,lane,hitPulse,onKey,onHome}:any){
+  const target=scene.pattern[Math.min(step,scene.pattern.length-1)];
+  const done=step>=scene.pattern.length;
+  return <section className={'driveScreen '+(world.theme==='forest'?'forestDrive':'cityDrive')}>
+    <div className="driveStageWrap">
+      <WorldStage world={world} scene={scene} step={step} car={car} lane={lane} target={target} hitPulse={hitPulse}/>
+      <button className="driveHome" onClick={onHome} aria-label="Home">⌂</button>
+      <div className="driveMission">
+        <span>{scene.icon} {scene.title.toUpperCase()}</span>
+        <b className={done?'done':''}>{done?'NICE! ⭐':message||<>TAP <em>{NOTES[target]}</em></>}</b>
+        <ProgressDots total={scene.pattern.length} step={step}/>
+      </div>
+    </div>
+    <PianoKeys onKey={onKey} disabled={done} highlight={done?-1:target}/>
+  </section>
 }
-function WorldStage({world,scene,step,pulse,phase,car}:any){
+
+function WorldStage({world,scene,step,car,lane,target,hitPulse}:any){
   const forest=world.theme==='forest';
-  return <div className={'worldStage scene-'+scene.id+' '+(forest?'forestStage':'cityStage')}><div className="worldSky"><div className="stars"/><div className={forest?'forestBack':'cityBack'}/></div><div className="road3d"><span className="roadLine a"/><span className="roadLine b"/><span className="roadLine c"/></div>
+  const laneX=[24,41,59,76];
+  return <div className={'worldStage driveWorld scene-'+scene.id+' '+(forest?'forestStage':'cityStage')}>
+    <div className="worldSky"><div className={forest?'forestBack':'cityBack'}/></div>
+    <div className="road3d movingRoad"><div className="roadDash"/></div>
+    {target!==undefined&&<div key={scene.id+'-'+step} className={'roadTarget target-'+target} style={{'--target':COLORS[target]}}><b>{NOTES[target]}</b></div>}
+
     {scene.id==='lights'&&<div className="streetlights">{[0,1,2,3].map(i=><span key={i} className={i<step?'on':''}><i/></span>)}</div>}
     {scene.id==='bridge'&&<div className={'bridge '+(step>=2?'leftOpen ':'')+(step>=4?'rightOpen':'')}><span className="tower left"/><span className="deck left"/><span className="deck right"/><span className="tower right"/></div>}
-    {scene.id==='tunnel'&&<div className="tunnel">{[0,1,2,3].map(i=><span key={i} className={(phase==='listen'?i===pulse:i<step)?'lit':''} style={{'--c':COLORS[i]}} />)}</div>}
-    {scene.id==='home'&&<div className="restoreCity"><span className={step>=1?'on':''}>MUSIC</span><div className={'windows '+(step>=2?'on':'')}>▦ ▦ ▦</div><div className={'speaker '+(step>=3?'on':'')}>◉</div><div className={'musicBurst '+(step>=4?'on':'')}>♪ ♫ ♪</div></div>}
+    {scene.id==='tunnel'&&<div className="tunnel">{[0,1,2,3].map(i=><span key={i} className={i<step?'lit':''} style={{'--c':COLORS[i]}} />)}</div>}
+    {scene.id==='home'&&<div className="restoreCity"><span className={step>=1?'on':''}>♪</span><div className={'windows '+(step>=2?'on':'')}>▦ ▦ ▦</div><div className={'speaker '+(step>=3?'on':'')}>◉</div><div className={'musicBurst '+(step>=4?'on':'')}>♪ ♫ ★</div></div>}
     {forest&&<div className="forestScene">
       {scene.id==='rabbit'&&<><span className="animal big">🐇</span><div className="beatTrail">{scene.pattern.map((_:any,i:number)=><i key={i} className={i<step?'on':''}/>)}</div></>}
-      {scene.id==='woodpecker'&&<><span className="animal bird">🐦</span><div className="workSign">{[0,1,2,3].map(i=><i key={i} className={i<step?'on':''}>×</i>)}</div></>}
-      {scene.id==='owl'&&<><span className="animal owl">🦉</span><div className="fireflies">{scene.pattern.map((_:any,i:number)=><i key={i} className={(phase==='listen'?i===pulse:i<step)?'on':''} style={{'--c':COLORS[i]}}/>)}</div></>}
-      {scene.id==='parade'&&<div className="parade">{['🐇','🐦','🦉','🦊','🦌','🐿️'].map((a,i)=><span key={i} className={i<step?'on':''}>{a}</span>)}</div>}
+      {scene.id==='woodpecker'&&<><span className="animal bird">🐦</span><div className="workSign">{[0,1,2,3].map(i=><i key={i} className={i<step?'on':''}>★</i>)}</div></>}
+      {scene.id==='owl'&&<><span className="animal owl">🦉</span><div className="fireflies">{scene.pattern.map((_:any,i:number)=><i key={i} className={i<step?'on':''} style={{'--c':COLORS[i]}}/>)}</div></>}
+      {scene.id==='parade'&&<div className="parade">{['🐇','🐦','🦉','🦊'].map((a,i)=><span key={i} className={i<step?'on':''}>{a}</span>)}</div>}
     </div>}
-    <div className="playerCar"><CarGraphic accent={car.accent}/></div>
+
+    <div key={'car-'+hitPulse+'-'+step} className="playerCar driveCar" style={{left:laneX[lane]+'%'}}><CarGraphic accent={car.accent}/><i className="carBoost"/></div>
   </div>
 }
-function RaceScreen({pattern,step,score,combo,car,onKey,onHome}:any){
-  const want=pattern[step%pattern.length];return <section className="gameScreen raceMode"><div className="raceHud"><div><span>SCORE</span><b>{score}</b></div><div><span>COMBO</span><b>{combo}x</b></div><div><span>CHECKPOINT</span><b>{Math.min(step+1,pattern.length)}/{pattern.length}</b></div></div><div className="worldStage scene-race"><div className="worldSky"><div className="stars"/><div className="cityBack"/></div><div className="road3d"><span className="roadLine a"/><span className="roadLine b"/><span className="roadLine c"/></div><div className="raceCue"><small>NEXT KEY</small><b style={{color:COLORS[want]}}>{NOTES[want]}</b></div><div className="playerCar raceCar"><CarGraphic accent={car.accent}/></div></div><PianoKeys onKey={onKey} highlight={want}/><button className="smallHome" onClick={onHome}>⌂</button></section>
+
+function RaceScreen({pattern,step,car,lane,hitPulse,onKey,onHome}:any){
+  const done=step>=pattern.length;
+  const target=pattern[Math.min(step,pattern.length-1)];
+  const laneX=[24,41,59,76];
+  return <section className="driveScreen raceDrive">
+    <div className="driveStageWrap">
+      <div className="worldStage driveWorld cityStage">
+        <div className="worldSky"><div className="cityBack"/></div>
+        <div className="road3d movingRoad fast"><div className="roadDash"/></div>
+        {!done&&<div key={'race-target-'+step} className={'roadTarget fastTarget target-'+target} style={{'--target':COLORS[target]}}><b>{NOTES[target]}</b></div>}
+        <div key={'race-car-'+hitPulse+'-'+step} className="playerCar driveCar raceCar" style={{left:laneX[lane]+'%'}}><CarGraphic accent={car.accent}/><i className="carBoost"/></div>
+      </div>
+      <button className="driveHome" onClick={onHome} aria-label="Home">⌂</button>
+      <div className="driveMission"><span>🏁 RACE</span><b className={done?'done':''}>{done?'FINISH! ⭐':<>TAP <em>{NOTES[target]}</em></>}</b><ProgressDots total={pattern.length} step={step}/></div>
+    </div>
+    <PianoKeys onKey={onKey} disabled={done} highlight={done?-1:target}/>
+  </section>
 }
-function PianoScreen({onKey,onHome}:any){
-  return <section className="pianoScreen"><div className="freeGlow"><span>🎹 FREE PLAY</span><h2>MAKE THE ROAD SING.</h2><p>No score. No wrong notes. Just play.</p></div><div className="pianoStage"><div className="soundRings"><i/><i/><i/></div><CarGraphic accent="#53e7ff"/></div><PianoKeys onKey={onKey}/><button className="smallHome" onClick={onHome}>⌂</button></section>
+
+function PianoScreen({car,lane,hitPulse,onKey,onHome}:any){
+  const laneX=[24,41,59,76];
+  return <section className="driveScreen pianoDrive">
+    <div className="driveStageWrap">
+      <div className="worldStage driveWorld cityStage">
+        <div className="worldSky"><div className="cityBack"/></div>
+        <div className="road3d movingRoad"><div className="roadDash"/></div>
+        <div key={'piano-car-'+hitPulse} className="playerCar driveCar" style={{left:laneX[lane]+'%'}}><CarGraphic accent={car.accent}/><i className="carBoost"/></div>
+      </div>
+      <button className="driveHome" onClick={onHome} aria-label="Home">⌂</button>
+      <div className="driveMission free"><span>🎹 JUST PLAY</span><b>MAKE THE CAR SING</b></div>
+    </div>
+    <PianoKeys onKey={onKey}/>
+  </section>
 }
+
 function Garage({selected,stars,races,onSelect,onBack}:any){
   const unlocked=(i:number)=>i===0||(i===1&&races>=1)||(i===2&&stars>=6)||(i===3&&stars>=10);
-  return <section className="panelScreen garage"><button className="back bubbleBack" onClick={onBack}>← DONE</button><div className="mapHeader garageTitle"><span>⭐ YOUR RIDES ⭐</span><h2>GARAGE</h2><p>{stars} stars · {races} races finished</p></div><div className="carGrid">{CARS.map((car,i)=><button key={car.id} className={'carCard '+(selected===car.id?'selected ':'')+(!unlocked(i)?'locked':'')} onClick={()=>unlocked(i)&&onSelect(car.id)} style={{'--accent':car.accent}}><div className="carCardArt"><CarGraphic accent={car.accent}/></div><b>{car.name}</b><em>{car.rarity} · Speed {car.speed} · Boost {car.boost}</em><small>{unlocked(i)?(selected===car.id?'✓ EQUIPPED':'TAP TO DRIVE'):'🔒 '+car.unlock}</small></button>)}</div><div className="paintBar"><b>🎨 PAINT</b><span/><span/><span/><span/><span/><span/></div></section>
+  return <section className="panelScreen garage cleanRewardGarage"><button className="back bubbleBack" onClick={onBack}>← DONE</button><div className="mapHeader garageTitle"><span>YOUR CARS</span><h2>GARAGE</h2></div><div className="carGrid">{CARS.map((car,i)=><button key={car.id} className={'carCard '+(selected===car.id?'selected ':'')+(!unlocked(i)?'locked':'')} onClick={()=>unlocked(i)&&onSelect(car.id)} style={{'--accent':car.accent}}><div className="carCardArt"><CarGraphic accent={car.accent}/></div><b>{car.name}</b><small>{unlocked(i)?(selected===car.id?'✓ EQUIPPED':'PICK THIS CAR'):'🔒 '+car.unlock}</small></button>)}</div></section>
 }
+
 function Results({kind,world,nextWorld,onContinue,onAgain,onHome}:any){
   const story=kind==='story';
   return <section className="resultsScreen"><div className="resultBurst">★</div><span>{story?'WORLD COMPLETE':'RACE COMPLETE'}</span><h2>{story?(world.id==='city'?'THE CITY SINGS AGAIN!':'THE PARADE IS MOVING!'):'FINISH LINE!'}</h2><p>{story?(String(world.reward)+' coins earned. Your progress is saved.'):'50 coins earned. Race progress saved.'}</p><div className="resultButtons">{story&&nextWorld&&<button className="cta continueResult" onClick={onContinue}>CONTINUE TO {nextWorld.title.toUpperCase()} →</button>}{story&&!nextWorld&&<button className="cta continueResult" onClick={onContinue}>BACK TO STORY ROAD →</button>}<button className="ghost" onClick={onAgain}>{story?'REPLAY WORLD':'RACE AGAIN'}</button><button className="ghost" onClick={onHome}>HOME</button></div></section>
 }
 
 function ProgressDots({total,step,pulse=-1,listening=false}:any){return <div className="progressDots">{Array.from({length:total},(_:any,i:number)=><i key={i} className={(i<step?'done ':'')+(listening&&i===pulse?'pulse':'')}/>)}</div>}
-function PianoKeys({onKey,disabled=false,highlight=-1}:any){return <div className={'keys '+(disabled?'disabled':'')}>{NOTES.map((n,i)=><button key={n} disabled={disabled} className={highlight===i?'hint':''} onPointerDown={()=>onKey(i)} style={{'--key':COLORS[i]}}><span>{n}</span><small>{['A','S','D','F'][i]}</small></button>)}</div>}
+function PianoKeys({onKey,disabled=false,highlight=-1}:any){return <div className={'keys '+(disabled?'disabled':'')}>{NOTES.map((n,i)=><button key={n} disabled={disabled} className={highlight===i?'hint':''} onPointerDown={()=>onKey(i)} style={{'--key':COLORS[i]}}><span>{n}</span></button>)}</div>}
+
 function CarGraphic({accent}:any){
   const car=CARS.find(c=>c.accent===accent)||CARS[0];
   return <div className="carArt" style={{'--accent':car.accent}}><div className="carGlow"/><img className="carImage" src={car.image} alt="" draggable="false"/></div>
